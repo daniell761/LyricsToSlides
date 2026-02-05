@@ -17,7 +17,7 @@ public class LyricsToSlidesApp extends JFrame {
     private JTextField titleTextField;
     
     public LyricsToSlidesApp() {
-        setTitle("歌词转PPT工具");
+        setTitle("歌词转PPT工具 test");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(800, 600);
         setLocationRelativeTo(null);
@@ -141,11 +141,13 @@ public class LyricsToSlidesApp extends JFrame {
                 File fileToSave = fileChooser.getSelectedFile();
                 String filePath = fileToSave.getAbsolutePath();
                 
+                // 确保文件扩展名为.pptx
                 if (!filePath.toLowerCase().endsWith(".pptx")) {
                     filePath += ".pptx";
                     fileToSave = new File(filePath);
                 }
                 
+                // 创建final变量供lambda使用
                 final String finalFilePath = filePath;
                 final File finalFileToSave = fileToSave;
                 

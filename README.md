@@ -53,7 +53,7 @@
 
 2. **运行生成的JAR文件**
    ```bash
-   java -jar target/lyrics-to-slides-1.0-SNAPSHOT-jar-with-dependencies.jar
+   java -jar target/歌词转PPT.jar
    ```
 
 3. **（可选）创建桌面快捷方式**

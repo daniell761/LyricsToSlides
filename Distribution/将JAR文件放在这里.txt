@@ -1,0 +1,31 @@
+📦 JAR文件获取说明
+===================
+
+在你的项目目录中运行以下命令来生成JAR文件：
+
+Windows:
+--------
+cd 你的项目路径\LyricsToSlides
+mvn clean package
+copy target\lyrics-to-slides-1.0-SNAPSHOT-jar-with-dependencies.jar 歌词转PPT.jar
+
+Mac/Linux:
+----------
+cd 你的项目路径/LyricsToSlides
+mvn clean package
+cp target/lyrics-to-slides-1.0-SNAPSHOT-jar-with-dependencies.jar 歌词转PPT.jar
+
+生成的"歌词转PPT.jar"文件放到这个文件夹中，就可以分享给别人了！
+
+文件位置：
+----------
+target/lyrics-to-slides-1.0-SNAPSHOT-jar-with-dependencies.jar
+
+注意：
+------
+- 一定要使用 "jar-with-dependencies.jar" 这个文件
+- 这个文件包含了所有依赖，别人才能直接运行
+- 文件大小约 10-15 MB 是正常的
+
+构建完成后，将JAR文件复制到这个Distribution文件夹，
+然后就可以把整个文件夹压缩成ZIP分享了！
