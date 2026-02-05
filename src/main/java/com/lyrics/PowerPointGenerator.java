@@ -8,13 +8,16 @@ import java.awt.*;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.FileInputStream;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 public class PowerPointGenerator {
     
     private String backgroundImagePath;
+    private Color fontColor = Color.WHITE;
+    private double fontSize = 48.0;
+    private int textHorizontalPosition = 150;
+    private int textVerticalPosition = 150;
     
     /**
      * 设置背景图片路径
@@ -22,6 +25,32 @@ public class PowerPointGenerator {
      */
     public void setBackgroundImage(String imagePath) {
         this.backgroundImagePath = imagePath;
+    }
+    
+    /**
+     * 设置字体颜色
+     * @param color 字体颜色
+     */
+    public void setFontColor(Color color) {
+        this.fontColor = color;
+    }
+    
+    /**
+     * 设置字体大小
+     * @param size 字体大小
+     */
+    public void setFontSize(double size) {
+        this.fontSize = size;
+    }
+    
+    /**
+     * 设置文本位置
+     * @param horizontal 水平位置
+     * @param vertical 垂直位置
+     */
+    public void setTextPosition(int horizontal, int vertical) {
+        this.textHorizontalPosition = horizontal;
+        this.textVerticalPosition = vertical;
     }
     
     /**
@@ -86,7 +115,7 @@ public class PowerPointGenerator {
         XSLFTextRun titleRun = titlePara.addNewTextRun();
         titleRun.setText(title);
         titleRun.setFontSize(72.0);
-        titleRun.setFontColor(Color.WHITE);
+        titleRun.setFontColor(fontColor);
         titleRun.setFontFamily("Microsoft YaHei");
         titleRun.setBold(true);
     }
@@ -100,9 +129,16 @@ public class PowerPointGenerator {
         // 设置背景
         setSlideBackgroundWithImage(ppt, slide, new Color(30, 30, 35));
         
-        // 添加歌词文本框
+        // 添加歌词文本框 - 使用自定义位置
+        int textBoxWidth = 980;
+        int textBoxHeight = 420;
         XSLFTextBox textBox = slide.createTextBox();
-        textBox.setAnchor(new Rectangle(150, 150, 980, 420));
+        textBox.setAnchor(new Rectangle(
+            textHorizontalPosition, 
+            textVerticalPosition, 
+            textBoxWidth, 
+            textBoxHeight
+        ));
         
         // 合并所有行
         StringBuilder lyricsText = new StringBuilder();
@@ -120,8 +156,8 @@ public class PowerPointGenerator {
         
         XSLFTextRun run = para.addNewTextRun();
         run.setText(lyricsText.toString());
-        run.setFontSize(48.0);
-        run.setFontColor(Color.WHITE);
+        run.setFontSize(fontSize);
+        run.setFontColor(fontColor);
         run.setFontFamily("Microsoft YaHei");
     }
     
@@ -144,13 +180,14 @@ public class PowerPointGenerator {
         XSLFTextRun run = para.addNewTextRun();
         run.setText("谢谢观看");
         run.setFontSize(60.0);
-        run.setFontColor(Color.WHITE);
+        run.setFontColor(fontColor);
         run.setFontFamily("Microsoft YaHei");
         run.setBold(true);
     }
     
     /**
      * 设置幻灯片背景（支持图片或颜色）
+     * 修复：保持图片原始比例，不变形
      */
     private void setSlideBackgroundWithImage(XMLSlideShow ppt, XSLFSlide slide, Color defaultColor) {
         if (backgroundImagePath != null && !backgroundImagePath.isEmpty()) {
@@ -161,6 +198,8 @@ public class PowerPointGenerator {
                 
                 // 创建图片形状并设置为背景
                 XSLFPictureShape picture = slide.createPicture(pictureData);
+                
+                // 直接填充整个幻灯片区域 - 图片会自动缩放填充
                 picture.setAnchor(new Rectangle(0, 0, 1280, 720));
                 
                 // 将图片移到最底层作为背景
