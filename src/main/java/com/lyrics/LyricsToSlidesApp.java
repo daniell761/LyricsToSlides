@@ -2,6 +2,7 @@ package com.lyrics;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -13,13 +14,17 @@ public class LyricsToSlidesApp extends JFrame {
     private JSpinner linesPerSlideSpinner;
     private JButton generateButton;
     private JButton clearButton;
+    private JButton selectBackgroundButton;
+    private JButton clearBackgroundButton;
     private JLabel statusLabel;
     private JTextField titleTextField;
+    private JLabel backgroundPathLabel;
+    private String selectedBackgroundPath = null;
     
     public LyricsToSlidesApp() {
-        setTitle("歌词转PPT工具 test");
+        setTitle("歌词转PPT工具");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(800, 600);
+        setSize(850, 680);
         setLocationRelativeTo(null);
         
         // 创建主面板
@@ -42,7 +47,7 @@ public class LyricsToSlidesApp extends JFrame {
     }
     
     private JPanel createTopPanel() {
-        JPanel panel = new JPanel(new GridLayout(2, 1, 5, 5));
+        JPanel panel = new JPanel(new GridLayout(3, 1, 5, 5));
         
         // 标题输入
         JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -62,6 +67,28 @@ public class LyricsToSlidesApp extends JFrame {
         
         settingsPanel.add(new JLabel("   (建议: 2-6行)"));
         panel.add(settingsPanel);
+        
+        // 背景图片选择
+        JPanel backgroundPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        backgroundPanel.add(new JLabel("背景图片："));
+        
+        selectBackgroundButton = new JButton("选择图片");
+        selectBackgroundButton.addActionListener(new SelectBackgroundListener());
+        backgroundPanel.add(selectBackgroundButton);
+        
+        clearBackgroundButton = new JButton("使用默认");
+        clearBackgroundButton.addActionListener(e -> {
+            selectedBackgroundPath = null;
+            updateBackgroundLabel();
+        });
+        backgroundPanel.add(clearBackgroundButton);
+        
+        backgroundPathLabel = new JLabel("(未选择，将使用默认纯色背景)");
+        backgroundPathLabel.setForeground(Color.GRAY);
+        backgroundPathLabel.setFont(new Font("Microsoft YaHei", Font.PLAIN, 11));
+        backgroundPanel.add(backgroundPathLabel);
+        
+        panel.add(backgroundPanel);
         
         return panel;
     }
@@ -115,6 +142,59 @@ public class LyricsToSlidesApp extends JFrame {
         return panel;
     }
     
+    /**
+     * 更新背景图片标签显示
+     */
+    private void updateBackgroundLabel() {
+        if (selectedBackgroundPath != null) {
+            File file = new File(selectedBackgroundPath);
+            String fileName = file.getName();
+            if (fileName.length() > 40) {
+                fileName = fileName.substring(0, 37) + "...";
+            }
+            backgroundPathLabel.setText("已选择: " + fileName);
+            backgroundPathLabel.setForeground(new Color(0, 128, 0));
+        } else {
+            backgroundPathLabel.setText("(未选择，将使用默认纯色背景)");
+            backgroundPathLabel.setForeground(Color.GRAY);
+        }
+    }
+    
+    /**
+     * 选择背景图片监听器
+     */
+    private class SelectBackgroundListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("选择背景图片");
+            
+            // 设置文件过滤器
+            FileNameExtensionFilter filter = new FileNameExtensionFilter(
+                "图片文件 (*.jpg, *.jpeg, *.png, *.gif, *.bmp)", 
+                "jpg", "jpeg", "png", "gif", "bmp"
+            );
+            fileChooser.setFileFilter(filter);
+            
+            // 如果之前选择过图片，打开该图片所在的文件夹
+            if (selectedBackgroundPath != null) {
+                fileChooser.setCurrentDirectory(new File(selectedBackgroundPath).getParentFile());
+            }
+            
+            int result = fileChooser.showOpenDialog(LyricsToSlidesApp.this);
+            
+            if (result == JFileChooser.APPROVE_OPTION) {
+                File selectedFile = fileChooser.getSelectedFile();
+                selectedBackgroundPath = selectedFile.getAbsolutePath();
+                updateBackgroundLabel();
+                statusLabel.setText("背景图片已选择: " + selectedFile.getName());
+            }
+        }
+    }
+    
+    /**
+     * 生成PPT按钮监听器
+     */
     private class GenerateButtonListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -161,6 +241,12 @@ public class LyricsToSlidesApp extends JFrame {
                         int linesPerSlide = (Integer) linesPerSlideSpinner.getValue();
                         
                         PowerPointGenerator generator = new PowerPointGenerator();
+                        
+                        // 设置背景图片（如果有选择）
+                        if (selectedBackgroundPath != null) {
+                            generator.setBackgroundImage(selectedBackgroundPath);
+                        }
+                        
                         generator.createPresentation(lyrics, title, linesPerSlide, finalFilePath);
                         
                         SwingUtilities.invokeLater(() -> {

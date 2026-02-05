@@ -2,14 +2,27 @@ package com.lyrics;
 
 import org.apache.poi.xslf.usermodel.*;
 import org.apache.poi.sl.usermodel.TextParagraph;
+import org.apache.poi.sl.usermodel.PictureData;
 
 import java.awt.*;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 public class PowerPointGenerator {
+    
+    private String backgroundImagePath;
+    
+    /**
+     * 设置背景图片路径
+     * @param imagePath 图片文件路径
+     */
+    public void setBackgroundImage(String imagePath) {
+        this.backgroundImagePath = imagePath;
+    }
     
     /**
      * 创建PowerPoint演示文稿
@@ -60,8 +73,8 @@ public class PowerPointGenerator {
     private void createTitleSlide(XMLSlideShow ppt, String title) {
         XSLFSlide slide = ppt.createSlide();
         
-        // 设置背景颜色
-        setSlideBackground(slide, new Color(45, 45, 48));
+        // 设置背景
+        setSlideBackgroundWithImage(ppt, slide, new Color(45, 45, 48));
         
         // 添加标题
         XSLFTextBox titleBox = slide.createTextBox();
@@ -84,8 +97,8 @@ public class PowerPointGenerator {
     private void createLyricsSlide(XMLSlideShow ppt, List<String> lines) {
         XSLFSlide slide = ppt.createSlide();
         
-        // 设置背景颜色
-        setSlideBackground(slide, new Color(30, 30, 35));
+        // 设置背景
+        setSlideBackgroundWithImage(ppt, slide, new Color(30, 30, 35));
         
         // 添加歌词文本框
         XSLFTextBox textBox = slide.createTextBox();
@@ -118,8 +131,8 @@ public class PowerPointGenerator {
     private void createEndSlide(XMLSlideShow ppt) {
         XSLFSlide slide = ppt.createSlide();
         
-        // 设置背景颜色
-        setSlideBackground(slide, new Color(45, 45, 48));
+        // 设置背景
+        setSlideBackgroundWithImage(ppt, slide, new Color(45, 45, 48));
         
         // 添加结束文本
         XSLFTextBox textBox = slide.createTextBox();
@@ -137,11 +150,69 @@ public class PowerPointGenerator {
     }
     
     /**
+     * 设置幻灯片背景（支持图片或颜色）
+     */
+    private void setSlideBackgroundWithImage(XMLSlideShow ppt, XSLFSlide slide, Color defaultColor) {
+        if (backgroundImagePath != null && !backgroundImagePath.isEmpty()) {
+            try {
+                // 添加背景图片
+                byte[] imageData = readImageFile(backgroundImagePath);
+                PictureData pictureData = ppt.addPicture(imageData, getPictureType(backgroundImagePath));
+                
+                // 创建图片形状并设置为背景
+                XSLFPictureShape picture = slide.createPicture(pictureData);
+                picture.setAnchor(new Rectangle(0, 0, 1280, 720));
+                
+                // 将图片移到最底层作为背景
+                slide.getShapes().remove(picture);
+                slide.getShapes().add(0, picture);
+                
+            } catch (IOException e) {
+                // 如果图片加载失败，使用默认颜色
+                System.err.println("无法加载背景图片: " + e.getMessage());
+                setSlideBackground(slide, defaultColor);
+            }
+        } else {
+            // 使用默认颜色背景
+            setSlideBackground(slide, defaultColor);
+        }
+    }
+    
+    /**
      * 设置幻灯片背景颜色
      */
     private void setSlideBackground(XSLFSlide slide, Color color) {
         XSLFBackground background = slide.getBackground();
         background.setFillColor(color);
+    }
+    
+    /**
+     * 读取图片文件
+     */
+    private byte[] readImageFile(String imagePath) throws IOException {
+        try (FileInputStream fis = new FileInputStream(imagePath)) {
+            byte[] data = new byte[fis.available()];
+            fis.read(data);
+            return data;
+        }
+    }
+    
+    /**
+     * 根据文件扩展名获取图片类型
+     */
+    private PictureData.PictureType getPictureType(String imagePath) {
+        String extension = imagePath.toLowerCase();
+        if (extension.endsWith(".jpg") || extension.endsWith(".jpeg")) {
+            return PictureData.PictureType.JPEG;
+        } else if (extension.endsWith(".png")) {
+            return PictureData.PictureType.PNG;
+        } else if (extension.endsWith(".gif")) {
+            return PictureData.PictureType.GIF;
+        } else if (extension.endsWith(".bmp")) {
+            return PictureData.PictureType.BMP;
+        } else {
+            return PictureData.PictureType.JPEG; // 默认
+        }
     }
     
     /**
