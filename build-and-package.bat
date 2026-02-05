@@ -32,7 +32,7 @@ if %errorlevel% neq 0 (
 echo.
 echo [3/4] 复制JAR文件到分发目录...
 if not exist "Distribution" mkdir Distribution
-copy /Y "target\lyrics-to-slides-1.0-SNAPSHOT-jar-with-dependencies.jar" "Distribution\LyricsGenerator.jar"
+copy /Y "target\LyricsToPPT.jar" "Distribution\LyricsToPPT.jar"
 if %errorlevel% neq 0 (
     echo [错误] 复制JAR文件失败！
     pause
@@ -41,12 +41,12 @@ if %errorlevel% neq 0 (
 
 echo.
 echo [4/4] 创建分发包...
-if exist "歌词转PPT工具.zip" del "歌词转PPT工具.zip"
+if exist "LyricsToPPT.zip" del "LyricsToPPT.zip"
 
 REM 检查是否有PowerShell（用于压缩）
 where powershell >nul 2>&1
 if %errorlevel% equ 0 (
-    powershell Compress-Archive -Path "Distribution\*" -DestinationPath "LyricsGenerator.zip" -Force
+    powershell Compress-Archive -Path "Distribution\*" -DestinationPath "LyricsToPPT.zip" -Force
     echo.
     echo ===============================================
     echo ✅ 构建成功！

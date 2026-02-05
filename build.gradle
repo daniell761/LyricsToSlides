@@ -1,0 +1,47 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group = 'com.lyrics'
+version = '1.0'
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.apache.poi:poi:5.2.5'
+    implementation 'org.apache.poi:poi-ooxml:5.2.5'
+}
+
+application {
+    mainClass = 'com.lyrics.LyricsToSlidesApp'
+}
+
+jar {
+    manifest {
+        attributes(
+            'Main-Class': 'com.lyrics.LyricsToSlidesApp'
+        )
+    }
+    from {
+        configurations.runtimeClasspath.collect { 
+            it.isDirectory() ? it : zipTree(it) 
+        }
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+// 创建可执行JAR任务
+task fatJar(type: Jar) {
+    manifest {
+        attributes 'Main-Class': 'com.lyrics.LyricsToSlidesApp'
+    }
+    archiveBaseName = project.n + '-all'
+    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
