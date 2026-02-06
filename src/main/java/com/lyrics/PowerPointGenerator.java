@@ -16,8 +16,8 @@ public class PowerPointGenerator {
     private String backgroundImagePath;
     private Color fontColor = Color.WHITE;
     private double fontSize = 48.0;
-    private int textHorizontalPosition = 150;
-    private int textVerticalPosition = 150;
+    private int textHorizontalPosition = 0;  // 不再使用，保持为0
+    private int textVerticalPosition = 100;  // 默认中上位置
     
     /**
      * 设置背景图片路径
@@ -129,16 +129,24 @@ public class PowerPointGenerator {
         // 设置背景
         setSlideBackgroundWithImage(ppt, slide, new Color(30, 30, 35));
         
-        // 添加歌词文本框 - 使用自定义位置
-        int textBoxWidth = 980;
-        int textBoxHeight = 420;
+        // 添加歌词文本框
         XSLFTextBox textBox = slide.createTextBox();
-        textBox.setAnchor(new Rectangle(
-            textHorizontalPosition, 
-            textVerticalPosition, 
-            textBoxWidth, 
-            textBoxHeight
-        ));
+        
+        // 文本框宽度设为整个幻灯片宽度，这样CENTER对齐才有意义
+        int textBoxWidth = 1280;
+        int textBoxHeight = 600;
+        
+        // 设置文本框位置 - 使用用户指定的垂直位置
+        textBox.setAnchor(new Rectangle(0, textVerticalPosition, textBoxWidth, textBoxHeight));
+        
+        // 设置文本框的垂直对齐方式为顶部对齐
+        textBox.setVerticalAlignment(org.apache.poi.sl.usermodel.VerticalAlignment.TOP);
+        
+        // 设置文本框的内边距为0（左、上、右、下）
+        textBox.setLeftInset(0);
+        textBox.setTopInset(0);
+        textBox.setRightInset(0);
+        textBox.setBottomInset(0);
         
         // 合并所有行
         StringBuilder lyricsText = new StringBuilder();
@@ -149,7 +157,7 @@ public class PowerPointGenerator {
             }
         }
         
-        // 添加段落
+        // 添加段落 - 使用CENTER对齐
         XSLFTextParagraph para = textBox.addNewTextParagraph();
         para.setTextAlign(TextParagraph.TextAlign.CENTER);
         para.setLineSpacing(150.0); // 行间距150%

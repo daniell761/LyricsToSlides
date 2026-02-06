@@ -33,8 +33,7 @@ public class LyricsToSlidesApp extends JFrame {
     private Color fontColor = Color.WHITE;
     private JSpinner fontSizeSpinner;
     
-    // 位置调整
-    private JSpinner horizontalSpinner;
+    // 位置调整 - 只需要垂直位置（水平总是居中）
     private JSpinner verticalSpinner;
     
     public LyricsToSlidesApp() {
@@ -45,8 +44,8 @@ public class LyricsToSlidesApp extends JFrame {
         
         // 创建主面板 - 使用分割面板
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-        splitPane.setDividerLocation(580);
-        splitPane.setResizeWeight(0.4);
+        splitPane.setDividerLocation(750);
+        splitPane.setResizeWeight(0.55);
         
         // 左侧面板 - 控制区
         JPanel leftPanel = createLeftPanel();
@@ -86,7 +85,7 @@ public class LyricsToSlidesApp extends JFrame {
         panel.setBorder(new EmptyBorder(15, 15, 15, 15));
         
         // 标题
-        JLabel titleLabel = new JLabel("实时预览 (1280x720)", SwingConstants.CENTER);
+        JLabel titleLabel = new JLabel("实时预览 (1280x720 @ 60%)", SwingConstants.CENTER);
         titleLabel.setFont(new Font("Microsoft YaHei", Font.BOLD, 16));
         panel.add(titleLabel, BorderLayout.NORTH);
         
@@ -109,34 +108,45 @@ public class LyricsToSlidesApp extends JFrame {
     }
     
     private JPanel createTopPanel() {
-        JPanel panel = new JPanel(new GridLayout(5, 1, 5, 5));
+        JPanel panel = new JPanel(new GridLayout(5, 1, 8, 8));
         
         // 标题输入
         JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        titlePanel.add(new JLabel("PPT标题："));
+        JLabel titleLabel = new JLabel("PPT标题：");
+        titleLabel.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
+        titlePanel.add(titleLabel);
         titleTextField = new JTextField(25);
         titleTextField.setText("歌词展示");
+        titleTextField.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
         titlePanel.add(titleTextField);
         panel.add(titlePanel);
         
         // 每页行数设置
         JPanel settingsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        settingsPanel.add(new JLabel("每张幻灯片行数："));
+        JLabel linesLabel = new JLabel("每张幻灯片行数：");
+        linesLabel.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
+        settingsPanel.add(linesLabel);
         SpinnerNumberModel spinnerModel = new SpinnerNumberModel(4, 1, 50, 1);
         linesPerSlideSpinner = new JSpinner(spinnerModel);
+        ((JSpinner.DefaultEditor) linesPerSlideSpinner.getEditor()).getTextField().setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
+        linesPerSlideSpinner.setPreferredSize(new Dimension(80, 30));
         linesPerSlideSpinner.addChangeListener(e -> updatePreview());
         settingsPanel.add(linesPerSlideSpinner);
         panel.add(settingsPanel);
         
         // 背景图片选择
         JPanel backgroundPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        backgroundPanel.add(new JLabel("背景图片："));
+        JLabel bgLabel = new JLabel("背景图片：");
+        bgLabel.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
+        backgroundPanel.add(bgLabel);
         
         selectBackgroundButton = new JButton("选择图片");
+        selectBackgroundButton.setFont(new Font("Microsoft YaHei", Font.PLAIN, 13));
         selectBackgroundButton.addActionListener(new SelectBackgroundListener());
         backgroundPanel.add(selectBackgroundButton);
         
         clearBackgroundButton = new JButton("使用默认");
+        clearBackgroundButton.setFont(new Font("Microsoft YaHei", Font.PLAIN, 13));
         clearBackgroundButton.addActionListener(e -> {
             selectedBackgroundPath = null;
             updateBackgroundLabel();
@@ -146,43 +156,52 @@ public class LyricsToSlidesApp extends JFrame {
         
         backgroundPathLabel = new JLabel("(未选择)");
         backgroundPathLabel.setForeground(Color.GRAY);
-        backgroundPathLabel.setFont(new Font("Microsoft YaHei", Font.PLAIN, 10));
+        backgroundPathLabel.setFont(new Font("Microsoft YaHei", Font.PLAIN, 12));
         backgroundPanel.add(backgroundPathLabel);
         
         panel.add(backgroundPanel);
         
         // 字体设置面板
         JPanel fontPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        fontPanel.add(new JLabel("字体大小："));
+        JLabel fontSizeLabel = new JLabel("字体大小：");
+        fontSizeLabel.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
+        fontPanel.add(fontSizeLabel);
         
         SpinnerNumberModel fontSizeModel = new SpinnerNumberModel(48.0, 1.0, 500.0, 1.0);
         fontSizeSpinner = new JSpinner(fontSizeModel);
+        ((JSpinner.DefaultEditor) fontSizeSpinner.getEditor()).getTextField().setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
+        fontSizeSpinner.setPreferredSize(new Dimension(80, 30));
         fontSizeSpinner.addChangeListener(e -> updatePreview());
         fontPanel.add(fontSizeSpinner);
         
-        fontPanel.add(new JLabel("   字体颜色："));
+        JLabel colorLabel = new JLabel("   字体颜色：");
+        colorLabel.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
+        fontPanel.add(colorLabel);
         fontColorButton = new JButton("    ");
         fontColorButton.setBackground(fontColor);
-        fontColorButton.setPreferredSize(new Dimension(50, 25));
+        fontColorButton.setPreferredSize(new Dimension(60, 30));
         fontColorButton.addActionListener(new FontColorListener());
         fontPanel.add(fontColorButton);
         
         panel.add(fontPanel);
         
-        // 位置调整面板
+        // 位置调整面板 - 只需要垂直位置
         JPanel positionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        positionPanel.add(new JLabel("水平位置："));
+        JLabel vPosLabel = new JLabel("垂直位置（上下调整）：");
+        vPosLabel.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
+        positionPanel.add(vPosLabel);
         
-        SpinnerNumberModel hModel = new SpinnerNumberModel(150, -1000, 2000, 10);
-        horizontalSpinner = new JSpinner(hModel);
-        horizontalSpinner.addChangeListener(e -> updatePreview());
-        positionPanel.add(horizontalSpinner);
-        
-        positionPanel.add(new JLabel("   垂直位置："));
-        SpinnerNumberModel vModel = new SpinnerNumberModel(150, -1000, 2000, 10);
+        SpinnerNumberModel vModel = new SpinnerNumberModel(100, -200, 500, 10);
         verticalSpinner = new JSpinner(vModel);
+        ((JSpinner.DefaultEditor) verticalSpinner.getEditor()).getTextField().setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
+        verticalSpinner.setPreferredSize(new Dimension(80, 30));
         verticalSpinner.addChangeListener(e -> updatePreview());
         positionPanel.add(verticalSpinner);
+        
+        JLabel hintLabel = new JLabel("  (水平自动居中)");
+        hintLabel.setFont(new Font("Microsoft YaHei", Font.PLAIN, 12));
+        hintLabel.setForeground(Color.GRAY);
+        positionPanel.add(hintLabel);
         
         panel.add(positionPanel);
         
@@ -193,10 +212,11 @@ public class LyricsToSlidesApp extends JFrame {
         JPanel panel = new JPanel(new BorderLayout(5, 5));
         
         JLabel label = new JLabel("请输入歌词（每行一句）：");
+        label.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
         panel.add(label, BorderLayout.NORTH);
         
         lyricsTextArea = new JTextArea();
-        lyricsTextArea.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
+        lyricsTextArea.setFont(new Font("Microsoft YaHei", Font.PLAIN, 15));
         lyricsTextArea.setLineWrap(true);
         lyricsTextArea.setWrapStyleWord(true);
         
@@ -221,13 +241,14 @@ public class LyricsToSlidesApp extends JFrame {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
         
         generateButton = new JButton("生成PPT");
-        generateButton.setFont(new Font("Microsoft YaHei", Font.BOLD, 14));
-        generateButton.setPreferredSize(new Dimension(120, 35));
+        generateButton.setFont(new Font("Microsoft YaHei", Font.BOLD, 16));
+        generateButton.setPreferredSize(new Dimension(140, 40));
         generateButton.addActionListener(new GenerateButtonListener());
         buttonPanel.add(generateButton);
         
         clearButton = new JButton("清空");
-        clearButton.setPreferredSize(new Dimension(100, 35));
+        clearButton.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
+        clearButton.setPreferredSize(new Dimension(110, 40));
         clearButton.addActionListener(e -> {
             lyricsTextArea.setText("");
             statusLabel.setText("已清空");
@@ -238,7 +259,7 @@ public class LyricsToSlidesApp extends JFrame {
         
         // 状态标签
         statusLabel = new JLabel("准备就绪 - 修改任何设置将自动更新预览");
-        statusLabel.setFont(new Font("Microsoft YaHei", Font.PLAIN, 11));
+        statusLabel.setFont(new Font("Microsoft YaHei", Font.PLAIN, 12));
         statusLabel.setForeground(Color.BLUE);
         panel.add(statusLabel, BorderLayout.SOUTH);
         
@@ -288,7 +309,6 @@ public class LyricsToSlidesApp extends JFrame {
         previewPanel.setLyrics(previewLyrics.toString());
         previewPanel.setFontColor(fontColor);
         previewPanel.setFontSize(((Number) fontSizeSpinner.getValue()).doubleValue());
-        previewPanel.setHorizontalPosition((Integer) horizontalSpinner.getValue());
         previewPanel.setVerticalPosition((Integer) verticalSpinner.getValue());
         previewPanel.repaint();
     }
@@ -301,14 +321,13 @@ public class LyricsToSlidesApp extends JFrame {
         private String lyrics = "";
         private Color textColor = Color.WHITE;
         private double fontSize = 48.0;
-        private int horizontalPos = 150;
-        private int verticalPos = 150;
+        private int verticalPos = 100;  // 默认中上位置
         
         public PreviewPanel() {
-            // 设置为实际PPT幻灯片尺寸 1280x720
-            setPreferredSize(new Dimension(1280, 720));
-            setMinimumSize(new Dimension(1280, 720));
-            setMaximumSize(new Dimension(1280, 720));
+            // 设置为缩小的预览尺寸 (原始1280x720的60%)
+            setPreferredSize(new Dimension(768, 432));
+            setMinimumSize(new Dimension(768, 432));
+            setMaximumSize(new Dimension(768, 432));
             setBackground(new Color(30, 30, 35));
         }
         
@@ -336,10 +355,6 @@ public class LyricsToSlidesApp extends JFrame {
             this.fontSize = size;
         }
         
-        public void setHorizontalPosition(int pos) {
-            this.horizontalPos = pos;
-        }
-        
         public void setVerticalPosition(int pos) {
             this.verticalPos = pos;
         }
@@ -351,35 +366,46 @@ public class LyricsToSlidesApp extends JFrame {
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
             
-            int width = 1280;
-            int height = 720;
+            // 原始PPT尺寸
+            int originalWidth = 1280;
+            int originalHeight = 720;
+            
+            // 预览面板尺寸
+            int previewWidth = getWidth();
+            int previewHeight = getHeight();
+            
+            // 缩放比例（0.6）
+            double scale = (double) previewWidth / originalWidth;
             
             // 绘制背景
             if (backgroundImage != null) {
-                // 保持背景图片比例，填充整个区域
-                g2d.drawImage(backgroundImage, 0, 0, width, height, this);
+                g2d.drawImage(backgroundImage, 0, 0, previewWidth, previewHeight, this);
             } else {
                 g2d.setColor(new Color(30, 30, 35));
-                g2d.fillRect(0, 0, width, height);
+                g2d.fillRect(0, 0, previewWidth, previewHeight);
             }
             
             // 绘制歌词
             if (!lyrics.isEmpty()) {
                 g2d.setColor(textColor);
-                g2d.setFont(new Font("Microsoft YaHei", Font.PLAIN, (int) fontSize));
+                // 按比例缩放字体
+                g2d.setFont(new Font("Microsoft YaHei", Font.PLAIN, (int) (fontSize * scale)));
                 
                 String[] lines = lyrics.split("\n");
                 FontMetrics fm = g2d.getFontMetrics();
                 int lineHeight = (int) (fm.getHeight() * 1.5);
                 
-                int y = verticalPos;
+                // 按比例缩放垂直位置
+                int scaledVerticalPos = (int) (verticalPos * scale);
+                
+                // 重要：drawString的y是基线位置，需要加上ascent才是文本框顶部的效果
+                // 这样预览就和实际PPT一致了（PPT的y是文本框顶部）
+                int y = scaledVerticalPos + fm.getAscent();
+                
                 for (String line : lines) {
                     // 居中对齐
                     int textWidth = fm.stringWidth(line);
-                    int x = (width - textWidth) / 2;
-                    
-                    // 应用水平偏移
-                    x = horizontalPos + (x - horizontalPos);
+                    int x = (previewWidth - textWidth) / 2;
                     
                     g2d.drawString(line, x, y);
                     y += lineHeight;
@@ -387,11 +413,11 @@ public class LyricsToSlidesApp extends JFrame {
             } else {
                 // 显示提示文字
                 g2d.setColor(Color.GRAY);
-                g2d.setFont(new Font("Microsoft YaHei", Font.PLAIN, 24));
+                g2d.setFont(new Font("Microsoft YaHei", Font.PLAIN, (int) (24 * scale)));
                 String hint = "输入歌词后将自动显示预览";
                 FontMetrics fm = g2d.getFontMetrics();
-                int x = (width - fm.stringWidth(hint)) / 2;
-                int y = height / 2;
+                int x = (previewWidth - fm.stringWidth(hint)) / 2;
+                int y = previewHeight / 2;
                 g2d.drawString(hint, x, y);
             }
         }
@@ -493,7 +519,6 @@ public class LyricsToSlidesApp extends JFrame {
                         String title = titleTextField.getText().trim();
                         int linesPerSlide = (Integer) linesPerSlideSpinner.getValue();
                         double fontSize = ((Number) fontSizeSpinner.getValue()).doubleValue();
-                        int hPos = (Integer) horizontalSpinner.getValue();
                         int vPos = (Integer) verticalSpinner.getValue();
                         
                         PowerPointGenerator generator = new PowerPointGenerator();
@@ -504,7 +529,7 @@ public class LyricsToSlidesApp extends JFrame {
                         }
                         generator.setFontColor(fontColor);
                         generator.setFontSize(fontSize);
-                        generator.setTextPosition(hPos, vPos);
+                        generator.setTextPosition(0, vPos);  // 水平位置始终为0（居中）
                         
                         generator.createPresentation(lyrics, title, linesPerSlide, finalFilePath);
                         
