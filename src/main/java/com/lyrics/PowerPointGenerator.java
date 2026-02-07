@@ -305,17 +305,74 @@ public class PowerPointGenerator {
     }
     
     /**
-     * 将歌词行分组
+     * 将歌词行分组（考虑拼音行）
+     * 如果歌词包含拼音（汉字+拼音成对出现），则按逻辑行分组
      */
     private List<List<String>> groupLines(List<String> lines, int linesPerSlide) {
         List<List<String>> groups = new ArrayList<>();
         
-        for (int i = 0; i < lines.size(); i += linesPerSlide) {
-            int endIndex = Math.min(i + linesPerSlide, lines.size());
-            List<String> group = new ArrayList<>(lines.subList(i, endIndex));
-            groups.add(group);
+        // 检测是否启用了拼音（检查是否有"汉字行+拼音行"的模式）
+        boolean hasPinyin = detectPinyinPattern(lines);
+        
+        if (hasPinyin) {
+            // 启用了拼音，每个逻辑行包含2个物理行（汉字+拼音）
+            // linesPerSlide 表示逻辑行数，所以需要 * 2
+            int physicalLinesPerSlide = linesPerSlide * 2;
+            
+            for (int i = 0; i < lines.size(); i += physicalLinesPerSlide) {
+                int endIndex = Math.min(i + physicalLinesPerSlide, lines.size());
+                List<String> group = new ArrayList<>(lines.subList(i, endIndex));
+                groups.add(group);
+            }
+        } else {
+            // 没有拼音，正常分组
+            for (int i = 0; i < lines.size(); i += linesPerSlide) {
+                int endIndex = Math.min(i + linesPerSlide, lines.size());
+                List<String> group = new ArrayList<>(lines.subList(i, endIndex));
+                groups.add(group);
+            }
         }
         
         return groups;
+    }
+    
+    /**
+     * 检测歌词是否包含拼音（汉字+拼音成对模式）
+     */
+    private boolean detectPinyinPattern(List<String> lines) {
+        if (lines.size() < 2) {
+            return false;
+        }
+        
+        // 检查前几行是否符合"汉字行+拼音行"模式
+        for (int i = 0; i < Math.min(4, lines.size() - 1); i += 2) {
+            String line1 = lines.get(i);
+            String line2 = lines.get(i + 1);
+            
+            // 第一行应该包含中文
+            boolean line1HasChinese = false;
+            for (char c : line1.toCharArray()) {
+                if (c >= 0x4E00 && c <= 0x9FA5) {
+                    line1HasChinese = true;
+                    break;
+                }
+            }
+            
+            // 第二行应该不包含中文（拼音行）
+            boolean line2HasChinese = false;
+            for (char c : line2.toCharArray()) {
+                if (c >= 0x4E00 && c <= 0x9FA5) {
+                    line2HasChinese = true;
+                    break;
+                }
+            }
+            
+            // 如果符合模式（有中文 + 无中文），说明有拼音
+            if (line1HasChinese && !line2HasChinese && line2.length() > 0) {
+                return true;
+            }
+        }
+        
+        return false;
     }
 }

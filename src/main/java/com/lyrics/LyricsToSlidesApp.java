@@ -129,7 +129,7 @@ public class LyricsToSlidesApp extends JFrame {
         JLabel linesLabel = new JLabel("每张幻灯片行数：");
         linesLabel.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
         settingsPanel.add(linesLabel);
-        SpinnerNumberModel spinnerModel = new SpinnerNumberModel(4, 1, 50, 1);
+        SpinnerNumberModel spinnerModel = new SpinnerNumberModel(2, 1, 50, 1);
         linesPerSlideSpinner = new JSpinner(spinnerModel);
         ((JSpinner.DefaultEditor) linesPerSlideSpinner.getEditor()).getTextField().setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
         linesPerSlideSpinner.setPreferredSize(new Dimension(80, 30));
@@ -170,7 +170,7 @@ public class LyricsToSlidesApp extends JFrame {
         fontSizeLabel.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
         fontPanel.add(fontSizeLabel);
         
-        SpinnerNumberModel fontSizeModel = new SpinnerNumberModel(48.0, 1.0, 500.0, 1.0);
+        SpinnerNumberModel fontSizeModel = new SpinnerNumberModel(90.0, 1.0, 500.0, 1.0);
         fontSizeSpinner = new JSpinner(fontSizeModel);
         ((JSpinner.DefaultEditor) fontSizeSpinner.getEditor()).getTextField().setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
         fontSizeSpinner.setPreferredSize(new Dimension(80, 30));
@@ -194,7 +194,7 @@ public class LyricsToSlidesApp extends JFrame {
         vPosLabel.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
         positionPanel.add(vPosLabel);
         
-        SpinnerNumberModel vModel = new SpinnerNumberModel(100, -200, 500, 10);
+        SpinnerNumberModel vModel = new SpinnerNumberModel(50, -200, 500, 10);
         verticalSpinner = new JSpinner(vModel);
         ((JSpinner.DefaultEditor) verticalSpinner.getEditor()).getTextField().setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
         verticalSpinner.setPreferredSize(new Dimension(80, 30));
@@ -212,7 +212,7 @@ public class LyricsToSlidesApp extends JFrame {
         JPanel pinyinPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         enablePinyinCheckBox = new JCheckBox("自动添加拼音");
         enablePinyinCheckBox.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
-        enablePinyinCheckBox.setSelected(false);
+        enablePinyinCheckBox.setSelected(true);
         enablePinyinCheckBox.addActionListener(e -> updatePreview());
         pinyinPanel.add(enablePinyinCheckBox);
         
