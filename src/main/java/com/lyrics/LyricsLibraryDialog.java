@@ -189,7 +189,6 @@ public class LyricsLibraryDialog extends JDialog {
         loadButton.setFont(new Font("Microsoft YaHei", Font.BOLD, 14));
         loadButton.setPreferredSize(new Dimension(110, 35));
         loadButton.setBackground(new Color(70, 130, 180));
-        loadButton.setForeground(Color.WHITE);
         loadButton.setFocusPainted(false);
         loadButton.addActionListener(e -> loadSelectedSong());
         rightPanel.add(loadButton);

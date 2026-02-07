@@ -29,7 +29,6 @@ public class PinyinUtil {
         }
         
         StringBuilder pinyin = new StringBuilder();
-        boolean isFirstWordChar = true;  // 标记是否是词的第一个字符
         
         for (int i = 0; i < chinese.length(); i++) {
             char c = chinese.charAt(i);
@@ -39,20 +38,13 @@ public class PinyinUtil {
                 try {
                     String[] pinyinArray = PinyinHelper.toHanyuPinyinStringArray(c, format);
                     if (pinyinArray != null && pinyinArray.length > 0) {
-                        String py = pinyinArray[0];
-                        
-                        // 每个词的首字母大写
-                        if (isFirstWordChar && py.length() > 0) {
-                            py = py.substring(0, 1).toUpperCase() + py.substring(1);
-                            isFirstWordChar = false;
-                        }
+                        String py = pinyinArray[0];  // 直接使用小写拼音
                         
                         pinyin.append(py);
                         
-                        // 如果下一个字符也是中文，添加空格并标记为新词开始
+                        // 如果下一个字符也是中文，添加空格
                         if (i + 1 < chinese.length() && isChinese(chinese.charAt(i + 1))) {
                             pinyin.append(" ");
-                            isFirstWordChar = true;
                         }
                     }
                 } catch (BadHanyuPinyinOutputFormatCombination e) {
@@ -62,10 +54,6 @@ public class PinyinUtil {
             } else {
                 // 非中文字符直接保留
                 pinyin.append(c);
-                // 遇到非中文字符，下一个中文字符算新词开始
-                if (c == ' ' || c == '\n' || c == '\t') {
-                    isFirstWordChar = true;
-                }
             }
         }
         

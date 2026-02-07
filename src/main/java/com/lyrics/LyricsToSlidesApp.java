@@ -119,7 +119,7 @@ public class LyricsToSlidesApp extends JFrame {
         titleLabel.setFont(new Font("Microsoft YaHei", Font.BOLD, 14));
         titlePanel.add(titleLabel);
         titleTextField = new JTextField(25);
-        titleTextField.setText("歌词展示");
+        titleTextField.setText("");
         titleTextField.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
         titlePanel.add(titleTextField);
         panel.add(titlePanel);
@@ -561,8 +561,14 @@ public class LyricsToSlidesApp extends JFrame {
             // 选择保存位置
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setDialogTitle("保存PowerPoint文件");
-            fileChooser.setSelectedFile(new File("歌词展示.pptx"));
             
+                        // 使用歌名作为默认文件名
+            String defaultFileName = titleTextField.getText().trim();
+            if (defaultFileName.isEmpty()) {
+                defaultFileName = "歌词展示";
+            }
+            fileChooser.setSelectedFile(new File(defaultFileName + ".pptx"));
+                        
             int userSelection = fileChooser.showSaveDialog(LyricsToSlidesApp.this);
             
             if (userSelection == JFileChooser.APPROVE_OPTION) {
