@@ -115,8 +115,8 @@ public class LyricsToSlidesApp extends JFrame {
         
         // 标题输入
         JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JLabel titleLabel = new JLabel("PPT标题：");
-        titleLabel.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
+        JLabel titleLabel = new JLabel("歌名：");
+        titleLabel.setFont(new Font("Microsoft YaHei", Font.BOLD, 14));
         titlePanel.add(titleLabel);
         titleTextField = new JTextField(25);
         titleTextField.setText("歌词展示");
@@ -668,50 +668,53 @@ public class LyricsToSlidesApp extends JFrame {
             return;
         }
         
-        String songName = JOptionPane.showInputDialog(
-            this,
-            "请输入歌名：",
-            "保存歌词",
-            JOptionPane.PLAIN_MESSAGE
-        );
+        // 直接使用歌名输入框的内容作为文件名
+        String songName = titleTextField.getText().trim();
         
-        if (songName != null && !songName.trim().isEmpty()) {
-            songName = songName.trim();
+        if (songName.isEmpty()) {
+            JOptionPane.showMessageDialog(
+                this,
+                "请先输入歌名！",
+                "提示",
+                JOptionPane.WARNING_MESSAGE
+            );
+            titleTextField.requestFocus();
+            return;
+        }
+        
+        // 检查是否已存在
+        if (LyricsLibrary.exists(songName)) {
+            int confirm = JOptionPane.showConfirmDialog(
+                this,
+                "歌曲《" + songName + "》已存在！\n是否覆盖？",
+                "确认覆盖",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE
+            );
             
-            // 检查是否已存在
-            if (LyricsLibrary.exists(songName)) {
-                int confirm = JOptionPane.showConfirmDialog(
-                    this,
-                    "歌曲《" + songName + "》已存在！\n是否覆盖？",
-                    "确认覆盖",
-                    JOptionPane.YES_NO_OPTION,
-                    JOptionPane.WARNING_MESSAGE
-                );
-                
-                if (confirm != JOptionPane.YES_OPTION) {
-                    return; // 用户选择不覆盖
-                }
+            if (confirm != JOptionPane.YES_OPTION) {
+                return; // 用户选择不覆盖
             }
+        }
+        
+        try {
+            LyricsLibrary.saveLyrics(songName, lyrics);
+            statusLabel.setText("歌词已保存：" + songName);
+            statusLabel.setForeground(new Color(0, 128, 0));
             
-            try {
-                LyricsLibrary.saveLyrics(songName, lyrics);
-                statusLabel.setText("歌词已保存：" + songName);
-                statusLabel.setForeground(new Color(0, 128, 0));
-                
-                JOptionPane.showMessageDialog(
-                    this,
-                    "歌词保存成功！",
-                    "成功",
-                    JOptionPane.INFORMATION_MESSAGE
-                );
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(
-                    this,
-                    "保存失败：" + ex.getMessage(),
-                    "错误",
-                    JOptionPane.ERROR_MESSAGE
-                );
-            }
+            JOptionPane.showMessageDialog(
+                this,
+                "歌词保存成功！",
+                "成功",
+                JOptionPane.INFORMATION_MESSAGE
+            );
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(
+                this,
+                "保存失败：" + ex.getMessage(),
+                "错误",
+                JOptionPane.ERROR_MESSAGE
+            );
         }
     }
     
@@ -730,6 +733,11 @@ public class LyricsToSlidesApp extends JFrame {
             titleTextField.setText(selectedSong);
             statusLabel.setText("已加载：" + selectedSong);
             statusLabel.setForeground(new Color(0, 128, 0));
+            
+            // 自动滚动到顶部
+            SwingUtilities.invokeLater(() -> {
+                lyricsTextArea.setCaretPosition(0);
+            });
         }
     }
     

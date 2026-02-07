@@ -92,9 +92,11 @@ public class LyricsLibraryDialog extends JDialog {
         letterGroup.add(otherButton);
         buttonsPanel.add(otherButton);
         
-        JScrollPane scrollPane = new JScrollPane(buttonsPanel);
-        scrollPane.setPreferredSize(new Dimension(180, 0));
-        panel.add(scrollPane, BorderLayout.CENTER);
+        // 不使用滚动条，直接添加按钮面板
+        panel.add(buttonsPanel, BorderLayout.CENTER);
+        
+        // 设置固定宽度，让面板足够大显示所有按钮
+        panel.setPreferredSize(new Dimension(200, 0));
         
         return panel;
     }
@@ -107,8 +109,8 @@ public class LyricsLibraryDialog extends JDialog {
         
         // 顶部：搜索
         JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JLabel searchLabel = new JLabel("🔍 搜索：");
-        searchLabel.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
+        JLabel searchLabel = new JLabel("搜索：");
+        searchLabel.setFont(new Font("Microsoft YaHei", Font.BOLD, 14));
         searchPanel.add(searchLabel);
         
         searchField = new JTextField(25);
@@ -167,12 +169,12 @@ public class LyricsLibraryDialog extends JDialog {
         // 左侧：管理按钮
         JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         
-        JButton renameButton = new JButton("✏️ 重命名");
+        JButton renameButton = new JButton("重命名");
         renameButton.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
         renameButton.addActionListener(e -> renameSong());
         leftPanel.add(renameButton);
         
-        JButton deleteButton = new JButton("🗑️ 删除");
+        JButton deleteButton = new JButton("删除");
         deleteButton.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
         deleteButton.setForeground(new Color(200, 0, 0));
         deleteButton.addActionListener(e -> deleteSong());
@@ -183,9 +185,12 @@ public class LyricsLibraryDialog extends JDialog {
         // 右侧：确认按钮
         JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         
-        JButton loadButton = new JButton("✅ 加载");
+        JButton loadButton = new JButton("加载");
         loadButton.setFont(new Font("Microsoft YaHei", Font.BOLD, 14));
         loadButton.setPreferredSize(new Dimension(110, 35));
+        loadButton.setBackground(new Color(70, 130, 180));
+        loadButton.setForeground(Color.WHITE);
+        loadButton.setFocusPainted(false);
         loadButton.addActionListener(e -> loadSelectedSong());
         rightPanel.add(loadButton);
         
