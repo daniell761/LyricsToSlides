@@ -142,31 +142,56 @@ public class PowerPointGenerator {
         // 设置文本框的垂直对齐方式为顶部对齐
         textBox.setVerticalAlignment(org.apache.poi.sl.usermodel.VerticalAlignment.TOP);
         
+        // 禁用文本自动调整 - 这很关键！
+        textBox.setTextAutofit(org.apache.poi.sl.usermodel.TextShape.TextAutofit.NONE);
+        
         // 设置文本框的内边距为0（左、上、右、下）
         textBox.setLeftInset(0);
         textBox.setTopInset(0);
         textBox.setRightInset(0);
         textBox.setBottomInset(0);
         
-        // 合并所有行
-        StringBuilder lyricsText = new StringBuilder();
+        // 处理每一行，分别设置中文和拼音的字体大小
         for (int i = 0; i < lines.size(); i++) {
-            lyricsText.append(lines.get(i));
-            if (i < lines.size() - 1) {
-                lyricsText.append("\n");
+            String line = lines.get(i);
+            
+            // 检查这行是否包含中文
+            boolean hasChinese = false;
+            for (char c : line.toCharArray()) {
+                if (c >= 0x4E00 && c <= 0x9FA5) {
+                    hasChinese = true;
+                    break;
+                }
+            }
+            
+            // 创建段落
+            XSLFTextParagraph para = (i == 0) ? textBox.addNewTextParagraph() : textBox.addNewTextParagraph();
+            para.setTextAlign(TextParagraph.TextAlign.CENTER);
+            para.setSpaceBefore(0.0);
+            
+            // 如果不是最后一行且不包含中文（拼音行），设置较大的段后间距
+            if (i < lines.size() - 1 && !hasChinese) {
+                para.setSpaceAfter(fontSize * 0.3);
+            } else {
+                para.setSpaceAfter(0.0);
+            }
+            para.setLineSpacing(100.0);
+            
+            XSLFTextRun run = para.addNewTextRun();
+            run.setText(line);
+            run.setFontColor(fontColor);
+            
+            // 根据是否包含中文设置字体和大小
+            if (hasChinese) {
+                // 中文行
+                run.setFontSize(fontSize);
+                run.setFontFamily("Microsoft YaHei");
+            } else {
+                // 拼音行 - 60%大小
+                run.setFontSize(fontSize * 0.6);
+                run.setFontFamily("Arial");
             }
         }
-        
-        // 添加段落 - 使用CENTER对齐
-        XSLFTextParagraph para = textBox.addNewTextParagraph();
-        para.setTextAlign(TextParagraph.TextAlign.CENTER);
-        para.setLineSpacing(150.0); // 行间距150%
-        
-        XSLFTextRun run = para.addNewTextRun();
-        run.setText(lyricsText.toString());
-        run.setFontSize(fontSize);
-        run.setFontColor(fontColor);
-        run.setFontFamily("Microsoft YaHei");
     }
     
     /**

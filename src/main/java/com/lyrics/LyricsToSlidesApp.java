@@ -36,6 +36,9 @@ public class LyricsToSlidesApp extends JFrame {
     // 位置调整 - 只需要垂直位置（水平总是居中）
     private JSpinner verticalSpinner;
     
+    // 拼音设置
+    private JCheckBox enablePinyinCheckBox;
+    
     public LyricsToSlidesApp() {
         setTitle("歌词转PPT工具 - 增强版");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -108,7 +111,7 @@ public class LyricsToSlidesApp extends JFrame {
     }
     
     private JPanel createTopPanel() {
-        JPanel panel = new JPanel(new GridLayout(5, 1, 8, 8));
+        JPanel panel = new JPanel(new GridLayout(6, 1, 8, 8));
         
         // 标题输入
         JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -205,6 +208,21 @@ public class LyricsToSlidesApp extends JFrame {
         
         panel.add(positionPanel);
         
+        // 拼音设置面板
+        JPanel pinyinPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        enablePinyinCheckBox = new JCheckBox("自动添加拼音");
+        enablePinyinCheckBox.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
+        enablePinyinCheckBox.setSelected(false);
+        enablePinyinCheckBox.addActionListener(e -> updatePreview());
+        pinyinPanel.add(enablePinyinCheckBox);
+        
+        JLabel pinyinHint = new JLabel("  (拼音会显示在汉字上方)");
+        pinyinHint.setFont(new Font("Microsoft YaHei", Font.PLAIN, 12));
+        pinyinHint.setForeground(Color.GRAY);
+        pinyinPanel.add(pinyinHint);
+        
+        panel.add(pinyinPanel);
+        
         return panel;
     }
     
@@ -290,6 +308,7 @@ public class LyricsToSlidesApp extends JFrame {
     private void updatePreview() {
         String lyrics = lyricsTextArea.getText().trim();
         int linesPerSlide = (Integer) linesPerSlideSpinner.getValue();
+        boolean enablePinyin = enablePinyinCheckBox.isSelected();
         
         // 获取第一组歌词
         String[] lines = lyrics.split("\n");
@@ -304,9 +323,15 @@ public class LyricsToSlidesApp extends JFrame {
             }
         }
         
+        // 如果启用拼音，处理歌词
+        String displayLyrics = previewLyrics.toString();
+        if (enablePinyin && !displayLyrics.isEmpty()) {
+            displayLyrics = PinyinUtil.addPinyinToLyrics(displayLyrics);
+        }
+        
         // 更新预览面板
         previewPanel.setBackgroundImage(selectedBackgroundPath);
-        previewPanel.setLyrics(previewLyrics.toString());
+        previewPanel.setLyrics(displayLyrics);
         previewPanel.setFontColor(fontColor);
         previewPanel.setFontSize(((Number) fontSizeSpinner.getValue()).doubleValue());
         previewPanel.setVerticalPosition((Integer) verticalSpinner.getValue());
@@ -388,27 +413,54 @@ public class LyricsToSlidesApp extends JFrame {
             // 绘制歌词
             if (!lyrics.isEmpty()) {
                 g2d.setColor(textColor);
-                // 按比例缩放字体
-                g2d.setFont(new Font("Microsoft YaHei", Font.PLAIN, (int) (fontSize * scale)));
                 
                 String[] lines = lyrics.split("\n");
-                FontMetrics fm = g2d.getFontMetrics();
-                int lineHeight = (int) (fm.getHeight() * 1.5);
                 
                 // 按比例缩放垂直位置
                 int scaledVerticalPos = (int) (verticalPos * scale);
+                int y = scaledVerticalPos;
                 
-                // 重要：drawString的y是基线位置，需要加上ascent才是文本框顶部的效果
-                // 这样预览就和实际PPT一致了（PPT的y是文本框顶部）
-                int y = scaledVerticalPos + fm.getAscent();
-                
-                for (String line : lines) {
+                for (int i = 0; i < lines.length; i++) {
+                    String line = lines[i];
+                    
+                    // 判断是否是中文行
+                    boolean hasChinese = false;
+                    for (char c : line.toCharArray()) {
+                        if (c >= 0x4E00 && c <= 0x9FA5) {
+                            hasChinese = true;
+                            break;
+                        }
+                    }
+                    
+                    // 设置字体
+                    Font currentFont;
+                    if (hasChinese) {
+                        // 中文行 - 使用正常字体大小
+                        currentFont = new Font("Microsoft YaHei", Font.PLAIN, (int) (fontSize * scale));
+                    } else {
+                        // 拼音行 - 使用60%字体大小，Arial字体
+                        currentFont = new Font("Arial", Font.PLAIN, (int) (fontSize * 0.6 * scale));
+                    }
+                    g2d.setFont(currentFont);
+                    FontMetrics fm = g2d.getFontMetrics();
+                    
+                    // 每行都需要加上ascent来得到基线位置
+                    y += fm.getAscent();
+                    
                     // 居中对齐
                     int textWidth = fm.stringWidth(line);
                     int x = (previewWidth - textWidth) / 2;
                     
                     g2d.drawString(line, x, y);
-                    y += lineHeight;
+                    
+                    // 移动到下一行的顶部
+                    // 先加上descent（从基线到底部的距离）
+                    y += fm.getDescent();
+                    
+                    // 如果是拼音行且不是最后一行，添加额外的段后间距
+                    if (!hasChinese && i < lines.length - 1) {
+                        y += (int) (fontSize * 0.3 * scale);
+                    }
                 }
             } else {
                 // 显示提示文字
@@ -520,6 +572,13 @@ public class LyricsToSlidesApp extends JFrame {
                         int linesPerSlide = (Integer) linesPerSlideSpinner.getValue();
                         double fontSize = ((Number) fontSizeSpinner.getValue()).doubleValue();
                         int vPos = (Integer) verticalSpinner.getValue();
+                        boolean enablePinyin = enablePinyinCheckBox.isSelected();
+                        
+                        // 如果启用拼音，处理歌词
+                        String processedLyrics = lyrics;
+                        if (enablePinyin) {
+                            processedLyrics = PinyinUtil.addPinyinToLyrics(lyrics);
+                        }
                         
                         PowerPointGenerator generator = new PowerPointGenerator();
                         
@@ -531,7 +590,7 @@ public class LyricsToSlidesApp extends JFrame {
                         generator.setFontSize(fontSize);
                         generator.setTextPosition(0, vPos);  // 水平位置始终为0（居中）
                         
-                        generator.createPresentation(lyrics, title, linesPerSlide, finalFilePath);
+                        generator.createPresentation(processedLyrics, title, linesPerSlide, finalFilePath);
                         
                         SwingUtilities.invokeLater(() -> {
                             statusLabel.setText("成功！文件已保存至：" + finalFilePath);
