@@ -1,8 +1,14 @@
 com\lyrics\LyricsToSlidesApp$FontColorListener.class
 com\lyrics\PinyinUtil.class
-com\lyrics\LyricsToSlidesApp$SelectBackgroundListener.class
 com\lyrics\LyricsToSlidesApp.class
-com\lyrics\LyricsToSlidesApp$GenerateButtonListener.class
 com\lyrics\PowerPointGenerator.class
 com\lyrics\LyricsToSlidesApp$PreviewPanel.class
+com\lyrics\LyricsLibraryDialog$1.class
+com\lyrics\LyricsLibrary$1.class
+com\lyrics\LyricsToSlidesApp$SelectBackgroundListener.class
+com\lyrics\LyricsLibrary$PinyinComparator.class
+com\lyrics\LyricsLibraryDialog$2.class
+com\lyrics\LyricsToSlidesApp$GenerateButtonListener.class
 com\lyrics\LyricsToSlidesApp$1.class
+com\lyrics\LyricsLibraryDialog.class
+com\lyrics\LyricsLibrary.class

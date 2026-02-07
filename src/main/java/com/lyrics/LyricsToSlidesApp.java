@@ -216,7 +216,7 @@ public class LyricsToSlidesApp extends JFrame {
         enablePinyinCheckBox.addActionListener(e -> updatePreview());
         pinyinPanel.add(enablePinyinCheckBox);
         
-        JLabel pinyinHint = new JLabel("  (拼音会显示在汉字上方)");
+        JLabel pinyinHint = new JLabel("  (拼音会显示在汉字下方)");
         pinyinHint.setFont(new Font("Microsoft YaHei", Font.PLAIN, 12));
         pinyinHint.setForeground(Color.GRAY);
         pinyinPanel.add(pinyinHint);
@@ -257,6 +257,20 @@ public class LyricsToSlidesApp extends JFrame {
         
         // 按钮面板
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
+        
+        // 加载歌词按钮
+        JButton loadButton = new JButton("加载歌词");
+        loadButton.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
+        loadButton.setPreferredSize(new Dimension(120, 40));
+        loadButton.addActionListener(e -> loadLyricsFromLibrary());
+        buttonPanel.add(loadButton);
+        
+        // 保存歌词按钮
+        JButton saveButton = new JButton("保存歌词");
+        saveButton.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
+        saveButton.setPreferredSize(new Dimension(120, 40));
+        saveButton.addActionListener(e -> saveLyricsToLibrary());
+        buttonPanel.add(saveButton);
         
         generateButton = new JButton("生成PPT");
         generateButton.setFont(new Font("Microsoft YaHei", Font.BOLD, 16));
@@ -635,6 +649,87 @@ public class LyricsToSlidesApp extends JFrame {
                     }
                 }).start();
             }
+        }
+    }
+    
+    /**
+     * 保存歌词到库
+     */
+    private void saveLyricsToLibrary() {
+        String lyrics = lyricsTextArea.getText().trim();
+        
+        if (lyrics.isEmpty()) {
+            JOptionPane.showMessageDialog(
+                this,
+                "请先输入歌词！",
+                "提示",
+                JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+        
+        String songName = JOptionPane.showInputDialog(
+            this,
+            "请输入歌名：",
+            "保存歌词",
+            JOptionPane.PLAIN_MESSAGE
+        );
+        
+        if (songName != null && !songName.trim().isEmpty()) {
+            songName = songName.trim();
+            
+            // 检查是否已存在
+            if (LyricsLibrary.exists(songName)) {
+                int confirm = JOptionPane.showConfirmDialog(
+                    this,
+                    "歌曲《" + songName + "》已存在！\n是否覆盖？",
+                    "确认覆盖",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE
+                );
+                
+                if (confirm != JOptionPane.YES_OPTION) {
+                    return; // 用户选择不覆盖
+                }
+            }
+            
+            try {
+                LyricsLibrary.saveLyrics(songName, lyrics);
+                statusLabel.setText("歌词已保存：" + songName);
+                statusLabel.setForeground(new Color(0, 128, 0));
+                
+                JOptionPane.showMessageDialog(
+                    this,
+                    "歌词保存成功！",
+                    "成功",
+                    JOptionPane.INFORMATION_MESSAGE
+                );
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(
+                    this,
+                    "保存失败：" + ex.getMessage(),
+                    "错误",
+                    JOptionPane.ERROR_MESSAGE
+                );
+            }
+        }
+    }
+    
+    /**
+     * 从库加载歌词
+     */
+    private void loadLyricsFromLibrary() {
+        LyricsLibraryDialog dialog = new LyricsLibraryDialog(this);
+        dialog.setVisible(true);
+        
+        String selectedSong = dialog.getSelectedSong();
+        String selectedLyrics = dialog.getSelectedLyrics();
+        
+        if (selectedSong != null && selectedLyrics != null) {
+            lyricsTextArea.setText(selectedLyrics);
+            titleTextField.setText(selectedSong);
+            statusLabel.setText("已加载：" + selectedSong);
+            statusLabel.setForeground(new Color(0, 128, 0));
         }
     }
     
