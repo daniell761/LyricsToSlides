@@ -373,16 +373,31 @@ public class LyricsToSlidesApp extends JFrame {
         int linesPerSlide = (Integer) linesPerSlideSpinner.getValue();
         boolean enablePinyin = enablePinyinCheckBox.isSelected();
         
-        // 获取第一组歌词
+        // 获取第一组歌词（考虑/分隔符）
         String[] lines = lyrics.split("\n");
         StringBuilder previewLyrics = new StringBuilder();
-        int count = 0;
-        for (String line : lines) {
-            String trimmed = line.trim();
-            if (!trimmed.isEmpty() && count < linesPerSlide) {
-                if (count > 0) previewLyrics.append("\n");
-                previewLyrics.append(trimmed);
-                count++;
+        int logicalCount = 0; // 逻辑行计数
+        
+        for (int i = 0; i < lines.length; i++) {
+            String line = lines[i].trim();
+            
+            if (line.isEmpty()) continue;
+            
+            // 添加当前行（移除末尾的/用于显示）
+            String displayLine = line.endsWith("/") ? line.substring(0, line.length() - 1).trim() : line;
+            
+            if (logicalCount > 0) previewLyrics.append("\n");
+            previewLyrics.append(displayLine);
+            logicalCount++;
+            
+            // 检查是否遇到/分隔符
+            if (line.endsWith("/")) {
+                break; // 遇到/就停止，显示第一个slide
+            }
+            
+            // 检查是否达到每页行数
+            if (logicalCount >= linesPerSlide) {
+                break;
             }
         }
         

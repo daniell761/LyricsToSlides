@@ -325,32 +325,108 @@ public class PowerPointGenerator {
     }
     
     /**
-     * 将歌词行分组（考虑拼音行）
-     * 如果歌词包含拼音（汉字+拼音成对出现），则按逻辑行分组
+     * 将歌词行分组（支持/分隔符和拼音）
+     * 规则：
+     * 1. 如果一行末尾有/，则强制在此处分页（包括其拼音）
+     * 2. 如果启用了拼音，汉字+拼音必须在同一slide
+     * 3. 否则按linesPerSlide正常分组
      */
     private List<List<String>> groupLines(List<String> lines, int linesPerSlide) {
         List<List<String>> groups = new ArrayList<>();
         
-        // 检测是否启用了拼音（检查是否有"汉字行+拼音行"的模式）
+        // 检测是否启用了拼音
         boolean hasPinyin = detectPinyinPattern(lines);
         
-        if (hasPinyin) {
-            // 启用了拼音，每个逻辑行包含2个物理行（汉字+拼音）
-            // linesPerSlide 表示逻辑行数，所以需要 * 2
-            int physicalLinesPerSlide = linesPerSlide * 2;
+        List<String> currentGroup = new ArrayList<>();
+        int logicalLineCount = 0; // 逻辑行计数（汉字行数）
+        
+        int i = 0;
+        while (i < lines.size()) {
+            String line = lines.get(i);
             
-            for (int i = 0; i < lines.size(); i += physicalLinesPerSlide) {
-                int endIndex = Math.min(i + physicalLinesPerSlide, lines.size());
-                List<String> group = new ArrayList<>(lines.subList(i, endIndex));
-                groups.add(group);
+            // 添加当前行（汉字行）
+            currentGroup.add(line);
+            
+            // 检查是否有对应的拼音行
+            boolean hasPinyinLine = false;
+            String pinyinLine = null;
+            
+            if (hasPinyin && i + 1 < lines.size()) {
+                pinyinLine = lines.get(i + 1);
+                // 检查下一行是否是拼音行（不含中文）
+                boolean nextLineIsPinyin = true;
+                for (char c : pinyinLine.toCharArray()) {
+                    if (c >= 0x4E00 && c <= 0x9FA5) {
+                        nextLineIsPinyin = false;
+                        break;
+                    }
+                }
+                
+                if (nextLineIsPinyin) {
+                    hasPinyinLine = true;
+                    currentGroup.add(pinyinLine);
+                }
             }
-        } else {
-            // 没有拼音，正常分组
-            for (int i = 0; i < lines.size(); i += linesPerSlide) {
-                int endIndex = Math.min(i + linesPerSlide, lines.size());
-                List<String> group = new ArrayList<>(lines.subList(i, endIndex));
-                groups.add(group);
+            
+            // 逻辑行计数+1
+            logicalLineCount++;
+            
+            // 检查是否需要分页
+            boolean shouldBreak = false;
+            
+            // 1. 检查汉字行是否有/分隔符
+            String cleanLine = line.trim();
+            if (cleanLine.endsWith("/")) {
+                shouldBreak = true;
             }
+            
+            // 2. 检查是否达到每页行数
+            if (logicalLineCount >= linesPerSlide) {
+                shouldBreak = true;
+            }
+            
+            // 3. 移动索引
+            if (hasPinyinLine) {
+                i += 2; // 跳过汉字+拼音
+            } else {
+                i += 1; // 只跳过汉字
+            }
+            
+            // 4. 如果到达最后，也要分页
+            if (i >= lines.size()) {
+                shouldBreak = true;
+            }
+            
+            // 执行分页
+            if (shouldBreak && !currentGroup.isEmpty()) {
+                // 移除行末的/符号
+                List<String> cleanedGroup = new ArrayList<>();
+                for (String groupLine : currentGroup) {
+                    String cleaned = groupLine.trim();
+                    if (cleaned.endsWith("/")) {
+                        cleaned = cleaned.substring(0, cleaned.length() - 1).trim();
+                    }
+                    cleanedGroup.add(cleaned);
+                }
+                
+                groups.add(cleanedGroup);
+                currentGroup = new ArrayList<>();
+                logicalLineCount = 0;
+            }
+        }
+        
+        // 处理最后可能剩余的行
+        if (!currentGroup.isEmpty()) {
+            // 移除行末的/符号
+            List<String> cleanedGroup = new ArrayList<>();
+            for (String groupLine : currentGroup) {
+                String cleaned = groupLine.trim();
+                if (cleaned.endsWith("/")) {
+                    cleaned = cleaned.substring(0, cleaned.length() - 1).trim();
+                }
+                cleanedGroup.add(cleaned);
+            }
+            groups.add(cleanedGroup);
         }
         
         return groups;
