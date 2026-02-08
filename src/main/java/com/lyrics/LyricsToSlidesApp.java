@@ -32,6 +32,10 @@ public class LyricsToSlidesApp extends JFrame {
     // 字体设置
     private Color fontColor = Color.WHITE;
     private JSpinner fontSizeSpinner;
+    private JComboBox<String> chineseFontComboBox;  // 中文字体选择
+    private JComboBox<String> pinyinFontComboBox;   // 拼音字体选择
+    private String chineseFont = "Microsoft YaHei";
+    private String pinyinFont = "Arial Black";
     
     // 位置调整 - 只需要垂直位置（水平总是居中）
     private JSpinner verticalSpinner;
@@ -111,7 +115,7 @@ public class LyricsToSlidesApp extends JFrame {
     }
     
     private JPanel createTopPanel() {
-        JPanel panel = new JPanel(new GridLayout(6, 1, 8, 8));
+        JPanel panel = new JPanel(new GridLayout(7, 1, 8, 8));
         
         // 标题输入
         JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -187,6 +191,51 @@ public class LyricsToSlidesApp extends JFrame {
         fontPanel.add(fontColorButton);
         
         panel.add(fontPanel);
+        
+        // 字体选择面板
+        JPanel fontSelectionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        
+        // 中文字体
+        JLabel chineseFontLabel = new JLabel("中文字体：");
+        chineseFontLabel.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
+        fontSelectionPanel.add(chineseFontLabel);
+        
+        String[] chineseFonts = {
+            "Microsoft YaHei", "SimSun", "SimHei", "KaiTi", "FangSong",
+            "Microsoft JhengHei", "STSong", "STHeiti", "STKaiti"
+        };
+        
+        chineseFontComboBox = new JComboBox<>(chineseFonts);
+        chineseFontComboBox.setFont(new Font("Microsoft YaHei", Font.PLAIN, 13));
+        chineseFontComboBox.setPreferredSize(new Dimension(145, 30));
+        chineseFontComboBox.addActionListener(e -> {
+            chineseFont = (String) chineseFontComboBox.getSelectedItem();
+            updatePreview();
+        });
+        fontSelectionPanel.add(chineseFontComboBox);
+        
+        fontSelectionPanel.add(Box.createHorizontalStrut(20));
+        
+        // 拼音字体
+        JLabel pinyinFontLabel = new JLabel("拼音字体：");
+        pinyinFontLabel.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
+        fontSelectionPanel.add(pinyinFontLabel);
+        
+        String[] pinyinFonts = {
+            "Arial Black","Arial", "Calibri", "Times New Roman", "Georgia", 
+            "Verdana", "Tahoma", "Courier New", "Comic Sans MS"
+        };
+        
+        pinyinFontComboBox = new JComboBox<>(pinyinFonts);
+        pinyinFontComboBox.setFont(new Font("Arial", Font.PLAIN, 13));
+        pinyinFontComboBox.setPreferredSize(new Dimension(145, 30));
+        pinyinFontComboBox.addActionListener(e -> {
+            pinyinFont = (String) pinyinFontComboBox.getSelectedItem();
+            updatePreview();
+        });
+        fontSelectionPanel.add(pinyinFontComboBox);
+        
+        panel.add(fontSelectionPanel);
         
         // 位置调整面板 - 只需要垂直位置
         JPanel positionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -449,11 +498,11 @@ public class LyricsToSlidesApp extends JFrame {
                     // 设置字体
                     Font currentFont;
                     if (hasChinese) {
-                        // 中文行 - 使用正常字体大小
-                        currentFont = new Font("Microsoft YaHei", Font.PLAIN, (int) (fontSize * scale));
+                        // 中文行 - 使用正常字体大小和用户选择的中文字体
+                        currentFont = new Font(chineseFont, Font.BOLD, (int) (fontSize * scale));
                     } else {
-                        // 拼音行 - 使用60%字体大小，Arial字体
-                        currentFont = new Font("Arial", Font.PLAIN, (int) (fontSize * 0.6 * scale));
+                        // 拼音行 - 使用50%字体大小和用户选择的拼音字体
+                        currentFont = new Font(pinyinFont, Font.BOLD, (int) (fontSize * 0.5 * scale));
                     }
                     g2d.setFont(currentFont);
                     FontMetrics fm = g2d.getFontMetrics();
@@ -609,6 +658,8 @@ public class LyricsToSlidesApp extends JFrame {
                         generator.setFontColor(fontColor);
                         generator.setFontSize(fontSize);
                         generator.setTextPosition(0, vPos);  // 水平位置始终为0（居中）
+                        generator.setChineseFont(chineseFont);  // 设置中文字体
+                        generator.setPinyinFont(pinyinFont);    // 设置拼音字体
                         
                         generator.createPresentation(processedLyrics, title, linesPerSlide, finalFilePath);
                         

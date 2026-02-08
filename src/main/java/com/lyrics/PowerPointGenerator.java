@@ -18,6 +18,8 @@ public class PowerPointGenerator {
     private double fontSize = 48.0;
     private int textHorizontalPosition = 0;  // 不再使用，保持为0
     private int textVerticalPosition = 100;  // 默认中上位置
+    private String chineseFont = "Microsoft YaHei";  // 中文字体
+    private String pinyinFont = "Arial Black";              // 拼音字体
     
     /**
      * 设置背景图片路径
@@ -51,6 +53,22 @@ public class PowerPointGenerator {
     public void setTextPosition(int horizontal, int vertical) {
         this.textHorizontalPosition = horizontal;
         this.textVerticalPosition = vertical;
+    }
+    
+    /**
+     * 设置中文字体
+     * @param font 字体名称
+     */
+    public void setChineseFont(String font) {
+        this.chineseFont = font;
+    }
+    
+    /**
+     * 设置拼音字体
+     * @param font 字体名称
+     */
+    public void setPinyinFont(String font) {
+        this.pinyinFont = font;
     }
     
     /**
@@ -116,7 +134,7 @@ public class PowerPointGenerator {
         titleRun.setText(title);
         titleRun.setFontSize(72.0);
         titleRun.setFontColor(fontColor);
-        titleRun.setFontFamily("Microsoft YaHei");
+        titleRun.setFontFamily(chineseFont);
         titleRun.setBold(true);
     }
     
@@ -171,7 +189,7 @@ public class PowerPointGenerator {
             
             // 如果不是最后一行且不包含中文（拼音行），设置较大的段后间距
             if (i < lines.size() - 1 && !hasChinese) {
-                para.setSpaceAfter(fontSize * 0.3);
+                para.setSpaceAfter(fontSize * 0.7);
             } else {
                 para.setSpaceAfter(0.0);
             }
@@ -185,11 +203,13 @@ public class PowerPointGenerator {
             if (hasChinese) {
                 // 中文行
                 run.setFontSize(fontSize);
-                run.setFontFamily("Microsoft YaHei");
+                run.setFontFamily(chineseFont);
+                run.setBold(true);
             } else {
-                // 拼音行 - 60%大小
-                run.setFontSize(fontSize * 0.6);
-                run.setFontFamily("Arial");
+                // 拼音行 - 50%大小
+                run.setFontSize(fontSize * 0.5);
+                run.setFontFamily(pinyinFont);
+                run.setBold(true);
             }
         }
     }
@@ -214,7 +234,7 @@ public class PowerPointGenerator {
         run.setText("谢谢观看");
         run.setFontSize(60.0);
         run.setFontColor(fontColor);
-        run.setFontFamily("Microsoft YaHei");
+        run.setFontFamily(chineseFont);
         run.setBold(true);
     }
     
