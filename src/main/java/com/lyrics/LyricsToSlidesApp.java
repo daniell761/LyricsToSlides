@@ -167,32 +167,8 @@ public class LyricsToSlidesApp extends JFrame {
         backgroundPanel.add(backgroundPathLabel);
         
         panel.add(backgroundPanel);
-        
-        // 字体设置面板
-        JPanel fontPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JLabel fontSizeLabel = new JLabel("字体大小：");
-        fontSizeLabel.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
-        fontPanel.add(fontSizeLabel);
-        
-        SpinnerNumberModel fontSizeModel = new SpinnerNumberModel(90.0, 1.0, 500.0, 1.0);
-        fontSizeSpinner = new JSpinner(fontSizeModel);
-        ((JSpinner.DefaultEditor) fontSizeSpinner.getEditor()).getTextField().setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
-        fontSizeSpinner.setPreferredSize(new Dimension(80, 30));
-        fontSizeSpinner.addChangeListener(e -> updatePreview());
-        fontPanel.add(fontSizeSpinner);
-        
-        JLabel colorLabel = new JLabel("   字体颜色：");
-        colorLabel.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
-        fontPanel.add(colorLabel);
-        fontColorButton = new JButton("    ");
-        fontColorButton.setBackground(fontColor);
-        fontColorButton.setPreferredSize(new Dimension(60, 30));
-        fontColorButton.addActionListener(new FontColorListener());
-        fontPanel.add(fontColorButton);
-        
-        panel.add(fontPanel);
-        
-        // 字体选择面板
+
+                // 字体选择面板
         JPanel fontSelectionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
         
         // 中文字体
@@ -236,6 +212,30 @@ public class LyricsToSlidesApp extends JFrame {
         fontSelectionPanel.add(pinyinFontComboBox);
         
         panel.add(fontSelectionPanel);
+        
+        // 字体设置面板
+        JPanel fontPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JLabel fontSizeLabel = new JLabel("字体大小：");
+        fontSizeLabel.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
+        fontPanel.add(fontSizeLabel);
+        
+        SpinnerNumberModel fontSizeModel = new SpinnerNumberModel(90.0, 1.0, 500.0, 1.0);
+        fontSizeSpinner = new JSpinner(fontSizeModel);
+        ((JSpinner.DefaultEditor) fontSizeSpinner.getEditor()).getTextField().setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
+        fontSizeSpinner.setPreferredSize(new Dimension(80, 30));
+        fontSizeSpinner.addChangeListener(e -> updatePreview());
+        fontPanel.add(fontSizeSpinner);
+        
+        JLabel colorLabel = new JLabel("   字体颜色：");
+        colorLabel.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
+        fontPanel.add(colorLabel);
+        fontColorButton = new JButton("    ");
+        fontColorButton.setBackground(fontColor);
+        fontColorButton.setPreferredSize(new Dimension(60, 30));
+        fontColorButton.addActionListener(new FontColorListener());
+        fontPanel.add(fontColorButton);
+        
+        panel.add(fontPanel);
         
         // 位置调整面板 - 只需要垂直位置
         JPanel positionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
