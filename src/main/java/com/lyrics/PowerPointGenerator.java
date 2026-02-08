@@ -104,7 +104,7 @@ public class PowerPointGenerator {
         }
         
         // 创建结束页
-        createEndSlide(ppt);
+        //createEndSlide(ppt);
         
         // 保存文件
         try (FileOutputStream out = new FileOutputStream(outputPath)) {
@@ -132,7 +132,7 @@ public class PowerPointGenerator {
         
         XSLFTextRun titleRun = titlePara.addNewTextRun();
         titleRun.setText(title);
-        titleRun.setFontSize(72.0);
+        titleRun.setFontSize(fontSize);
         titleRun.setFontColor(fontColor);
         titleRun.setFontFamily(chineseFont);
         titleRun.setBold(true);
