@@ -373,43 +373,55 @@ public class LyricsToSlidesApp extends JFrame {
         int linesPerSlide = (Integer) linesPerSlideSpinner.getValue();
         boolean enablePinyin = enablePinyinCheckBox.isSelected();
         
-        // 获取第一组歌词（考虑/分隔符）
+        // 1. 先提取段落标记（检查所有行）
+        String sectionLabel = null;
         String[] lines = lyrics.split("\n");
-        StringBuilder previewLyrics = new StringBuilder();
-        int logicalCount = 0; // 逻辑行计数
         
+        // 检查每一行是否有标记
         for (int i = 0; i < lines.length; i++) {
             String line = lines[i].trim();
-            
-            if (line.isEmpty()) continue;
-            
-            // 添加当前行（移除末尾的/用于显示）
-            String displayLine = line.endsWith("/") ? line.substring(0, line.length() - 1).trim() : line;
-            
-            if (logicalCount > 0) previewLyrics.append("\n");
-            previewLyrics.append(displayLine);
-            logicalCount++;
-            
-            // 检查是否遇到/分隔符
-            if (line.endsWith("/")) {
-                break; // 遇到/就停止，显示第一个slide
-            }
-            
-            // 检查是否达到每页行数
-            if (logicalCount >= linesPerSlide) {
-                break;
+            if (line.length() > 0) {
+                char firstChar = line.charAt(0);
+                if (firstChar == 'C' || firstChar == 'B' || firstChar == 'L' || firstChar == 'V') {
+                    int j = 1;
+                    while (j < line.length() && Character.isDigit(line.charAt(j))) {
+                        j++;
+                    }
+                    if (j < line.length() && line.charAt(j) == ' ') {
+                        sectionLabel = line.substring(0, j);
+                        // 移除标记
+                        String remaining = line.substring(j + 1).trim();
+                        lines[i] = remaining;
+                        break; // 找到第一个标记就停止
+                    }
+                }
             }
         }
         
-        // 如果启用拼音，处理歌词
+        // 2. 获取第一组歌词（考虑/分隔符）
+        StringBuilder previewLyrics = new StringBuilder();
+        int count = 0;
+        for (String line : lines) {
+            String trimmed = line.trim();
+            if (!trimmed.isEmpty() && count < linesPerSlide) {
+                String displayLine = trimmed.endsWith("/") ? trimmed.substring(0, trimmed.length() - 1).trim() : trimmed;
+                if (count > 0) previewLyrics.append("\n");
+                previewLyrics.append(displayLine);
+                count++;
+                if (trimmed.endsWith("/")) break;
+            }
+        }
+        
+        // 3. 如果启用拼音，处理歌词
         String displayLyrics = previewLyrics.toString();
         if (enablePinyin && !displayLyrics.isEmpty()) {
             displayLyrics = PinyinUtil.addPinyinToLyrics(displayLyrics);
         }
         
-        // 更新预览面板
+        // 4. 更新预览面板（包括标记）
         previewPanel.setBackgroundImage(selectedBackgroundPath);
         previewPanel.setLyrics(displayLyrics);
+        previewPanel.setSectionLabel(sectionLabel);
         previewPanel.setFontColor(fontColor);
         previewPanel.setFontSize(((Number) fontSizeSpinner.getValue()).doubleValue());
         previewPanel.setVerticalPosition((Integer) verticalSpinner.getValue());
@@ -425,6 +437,7 @@ public class LyricsToSlidesApp extends JFrame {
         private Color textColor = Color.WHITE;
         private double fontSize = 48.0;
         private int verticalPos = 100;  // 默认中上位置
+        private String sectionLabel = null;  // 段落标记
         
         public PreviewPanel() {
             // 设置为缩小的预览尺寸 (原始1280x720的60%)
@@ -448,6 +461,10 @@ public class LyricsToSlidesApp extends JFrame {
         
         public void setLyrics(String lyrics) {
             this.lyrics = lyrics;
+        }
+        
+        public void setSectionLabel(String label) {
+            this.sectionLabel = label;
         }
         
         public void setFontColor(Color color) {
@@ -549,6 +566,19 @@ public class LyricsToSlidesApp extends JFrame {
                 int x = (previewWidth - fm.stringWidth(hint)) / 2;
                 int y = previewHeight / 2;
                 g2d.drawString(hint, x, y);
+            }
+            
+            // 绘制段落标记（如果有）
+            if (sectionLabel != null && !sectionLabel.isEmpty()) {
+                g2d.setColor(Color.WHITE);
+                g2d.setFont(new Font("Arial", Font.BOLD, (int) (60 * scale)));
+                FontMetrics fm = g2d.getFontMetrics();
+                
+                int labelWidth = fm.stringWidth(sectionLabel);
+                int labelX = (previewWidth - labelWidth) / 2;
+                int labelY = (int) (580 * scale) + fm.getAscent();
+                
+                g2d.drawString(sectionLabel, labelX, labelY);
             }
         }
     }

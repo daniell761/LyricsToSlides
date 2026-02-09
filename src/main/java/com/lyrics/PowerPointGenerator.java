@@ -147,6 +147,9 @@ public class PowerPointGenerator {
         // 设置背景
         setSlideBackgroundWithImage(ppt, slide, new Color(30, 30, 35));
         
+        // 1. 提取段落标记（C, B, L）
+        String sectionLabel = extractAndRemoveSectionLabel(lines);
+        
         // 添加歌词文本框
         XSLFTextBox textBox = slide.createTextBox();
         
@@ -212,6 +215,75 @@ public class PowerPointGenerator {
                 run.setBold(true);
             }
         }
+        
+        // 2. 如果有段落标记，在底部添加
+        if (sectionLabel != null && !sectionLabel.isEmpty()) {
+            XSLFTextBox labelBox = slide.createTextBox();
+            labelBox.setAnchor(new Rectangle(0, 540, 1280, 60));
+            
+            XSLFTextParagraph labelPara = labelBox.addNewTextParagraph();
+            labelPara.setTextAlign(TextParagraph.TextAlign.CENTER);
+            
+            XSLFTextRun labelRun = labelPara.addNewTextRun();
+            labelRun.setText(sectionLabel);
+            labelRun.setFontSize(60.0);
+            labelRun.setFontColor(Color.WHITE);
+            labelRun.setFontFamily("Arial");
+            labelRun.setBold(true);
+        }
+    }
+    
+    /**
+     * 提取并移除段落标记（C, B, L, V）
+     * 检查所有行，任何行有标记就提取并移除
+     * @param lines 歌词行列表（会被直接修改）
+     * @return 段落标记，如果没有返回null
+     */
+    private String extractAndRemoveSectionLabel(List<String> lines) {
+        if (lines.isEmpty()) {
+            return null;
+        }
+        
+        // 遍历所有行，找到第一个带标记的行
+        for (int lineIndex = 0; lineIndex < lines.size(); lineIndex++) {
+            String line = lines.get(lineIndex).trim();
+            
+            if (line.length() > 0) {
+                char firstChar = line.charAt(0);
+                
+                // 检查是否是标记字符 (C, B, L, V)
+                if (firstChar == 'C' || firstChar == 'B' || firstChar == 'L' || firstChar == 'V') {
+                    // 提取标记（字母 + 可选数字）
+                    StringBuilder label = new StringBuilder();
+                    label.append(firstChar);
+                    
+                    int i = 1;
+                    // 提取后面的数字（如果有）
+                    while (i < line.length() && Character.isDigit(line.charAt(i))) {
+                        label.append(line.charAt(i));
+                        i++;
+                    }
+                    
+                    // 检查标记后是否有空格（必须有空格才算标记）
+                    if (i < line.length() && line.charAt(i) == ' ') {
+                        String labelStr = label.toString();
+                        
+                        // 移除标记，保留后面的内容
+                        String remaining = line.substring(i + 1).trim();
+                        if (!remaining.isEmpty()) {
+                            lines.set(lineIndex, remaining);
+                        } else {
+                            // 如果移除标记后该行为空，删除整行
+                            lines.remove(lineIndex);
+                        }
+                        
+                        return labelStr;
+                    }
+                }
+            }
+        }
+        
+        return null;
     }
     
     /**
