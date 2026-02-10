@@ -20,6 +20,7 @@ public class PowerPointGenerator {
     private int textVerticalPosition = 100;  // 默认中上位置
     private String chineseFont = "Microsoft YaHei";  // 中文字体
     private String pinyinFont = "Arial Black";              // 拼音字体
+    private float backgroundBrightness = 1.0f;  // 背景亮度，1.0为原始亮度
     
     /**
      * 设置背景图片路径
@@ -69,6 +70,14 @@ public class PowerPointGenerator {
      */
     public void setPinyinFont(String font) {
         this.pinyinFont = font;
+    }
+    
+    /**
+     * 设置背景亮度
+     * @param brightness 亮度值 (0.0-1.0)
+     */
+    public void setBackgroundBrightness(float brightness) {
+        this.backgroundBrightness = Math.max(0.0f, Math.min(1.0f, brightness));
     }
     
     /**
@@ -356,6 +365,23 @@ public class PowerPointGenerator {
                 // 将图片移到最底层作为背景
                 slide.getShapes().remove(picture);
                 slide.getShapes().add(0, picture);
+                
+                // 如果亮度小于100%，添加半透明黑色遮罩
+                if (backgroundBrightness < 1.0f) {
+                    XSLFAutoShape overlay = slide.createAutoShape();
+                    overlay.setAnchor(new Rectangle(0, 0, 1280, 720));
+                    overlay.setShapeType(org.apache.poi.sl.usermodel.ShapeType.RECT);
+                    
+                    // 设置为黑色，透明度根据亮度计算
+                    float darkness = 1.0f - backgroundBrightness;
+                    int alpha = (int)(darkness * 255);
+                    overlay.setFillColor(new Color(0, 0, 0, alpha));
+                    overlay.setLineColor(new Color(0, 0, 0, 0));  // 无边框
+                    
+                    // 将遮罩放在背景图片之上，但在内容之下
+                    slide.getShapes().remove(overlay);
+                    slide.getShapes().add(1, overlay);
+                }
                 
             } catch (IOException e) {
                 // 如果图片加载失败，使用默认颜色

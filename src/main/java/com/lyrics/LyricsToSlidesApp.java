@@ -43,6 +43,10 @@ public class LyricsToSlidesApp extends JFrame {
     // 拼音设置
     private JCheckBox enablePinyinCheckBox;
     
+    // 背景亮度调节
+    private JSlider brightnessSlider;
+    private float backgroundBrightness = 1.0f;  // 默认100%亮度
+    
     public LyricsToSlidesApp() {
         setTitle("歌词转PPT工具 - 增强版");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -115,7 +119,7 @@ public class LyricsToSlidesApp extends JFrame {
     }
     
     private JPanel createTopPanel() {
-        JPanel panel = new JPanel(new GridLayout(7, 1, 8, 8));
+        JPanel panel = new JPanel(new GridLayout(8, 1, 8, 8));
         
         // 标题输入
         JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -167,6 +171,31 @@ public class LyricsToSlidesApp extends JFrame {
         backgroundPanel.add(backgroundPathLabel);
         
         panel.add(backgroundPanel);
+        
+        // 背景亮度调节
+        JPanel brightnessPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        JLabel brightnessLabel = new JLabel("背景亮度：");
+        brightnessLabel.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
+        brightnessPanel.add(brightnessLabel);
+        
+        brightnessSlider = new JSlider(JSlider.HORIZONTAL, 0, 100, 100);
+        brightnessSlider.setPreferredSize(new Dimension(200, 45));
+        brightnessSlider.setMajorTickSpacing(25);
+        brightnessSlider.setMinorTickSpacing(5);
+        brightnessSlider.setPaintTicks(true);
+        brightnessSlider.setPaintLabels(true);
+        brightnessSlider.addChangeListener(e -> {
+            backgroundBrightness = brightnessSlider.getValue() / 100.0f;
+            updatePreview();
+        });
+        brightnessPanel.add(brightnessSlider);
+        
+        JLabel brightnessHint = new JLabel("(调暗背景可让歌词更清晰)");
+        brightnessHint.setFont(new Font("Microsoft YaHei", Font.PLAIN, 11));
+        brightnessHint.setForeground(Color.GRAY);
+        brightnessPanel.add(brightnessHint);
+        
+        panel.add(brightnessPanel);
 
                 // 字体选择面板
         JPanel fontSelectionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
@@ -499,7 +528,18 @@ public class LyricsToSlidesApp extends JFrame {
             
             // 绘制背景
             if (backgroundImage != null) {
-                g2d.drawImage(backgroundImage, 0, 0, previewWidth, previewHeight, this);
+                // 应用亮度调整
+                if (backgroundBrightness < 1.0f) {
+                    // 先绘制原图
+                    g2d.drawImage(backgroundImage, 0, 0, previewWidth, previewHeight, this);
+                    // 再覆盖一层半透明黑色来降低亮度
+                    float darkness = 1.0f - backgroundBrightness;
+                    g2d.setColor(new Color(0, 0, 0, (int)(darkness * 255)));
+                    g2d.fillRect(0, 0, previewWidth, previewHeight);
+                } else {
+                    // 原始亮度，直接绘制
+                    g2d.drawImage(backgroundImage, 0, 0, previewWidth, previewHeight, this);
+                }
             } else {
                 g2d.setColor(new Color(30, 30, 35));
                 g2d.fillRect(0, 0, previewWidth, previewHeight);
@@ -699,6 +739,7 @@ public class LyricsToSlidesApp extends JFrame {
                         generator.setTextPosition(0, vPos);  // 水平位置始终为0（居中）
                         generator.setChineseFont(chineseFont);  // 设置中文字体
                         generator.setPinyinFont(pinyinFont);    // 设置拼音字体
+                        generator.setBackgroundBrightness(backgroundBrightness);  // 设置背景亮度
                         
                         // 传递原始歌词和enablePinyin参数
                         generator.createPresentation(lyrics, title, linesPerSlide, finalFilePath, enablePinyin);
