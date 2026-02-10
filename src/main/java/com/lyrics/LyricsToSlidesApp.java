@@ -688,12 +688,6 @@ public class LyricsToSlidesApp extends JFrame {
                         int vPos = (Integer) verticalSpinner.getValue();
                         boolean enablePinyin = enablePinyinCheckBox.isSelected();
                         
-                        // 如果启用拼音，处理歌词
-                        String processedLyrics = lyrics;
-                        if (enablePinyin) {
-                            processedLyrics = PinyinUtil.addPinyinToLyrics(lyrics);
-                        }
-                        
                         PowerPointGenerator generator = new PowerPointGenerator();
                         
                         // 设置所有自定义参数
@@ -706,7 +700,8 @@ public class LyricsToSlidesApp extends JFrame {
                         generator.setChineseFont(chineseFont);  // 设置中文字体
                         generator.setPinyinFont(pinyinFont);    // 设置拼音字体
                         
-                        generator.createPresentation(processedLyrics, title, linesPerSlide, finalFilePath);
+                        // 传递原始歌词和enablePinyin参数
+                        generator.createPresentation(lyrics, title, linesPerSlide, finalFilePath, enablePinyin);
                         
                         SwingUtilities.invokeLater(() -> {
                             statusLabel.setText("成功！文件已保存至：" + finalFilePath);

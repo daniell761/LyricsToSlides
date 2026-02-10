@@ -78,9 +78,10 @@ public class PowerPointGenerator {
      * @param title PPT标题
      * @param linesPerSlide 每张幻灯片的行数
      * @param outputPath 输出文件路径
+     * @param enablePinyin 是否启用拼音
      * @throws IOException 文件操作异常
      */
-    public void createPresentation(String lyrics, String title, int linesPerSlide, String outputPath) 
+    public void createPresentation(String lyrics, String title, int linesPerSlide, String outputPath, boolean enablePinyin) 
             throws IOException {
         
         // 创建PPT对象
@@ -100,7 +101,35 @@ public class PowerPointGenerator {
         
         // 为每组创建幻灯片
         for (List<String> group : groups) {
-            createLyricsSlide(ppt, group);
+            // 1. 先提取标记（修改group）
+            String sectionLabel = extractAndRemoveSectionLabel(group);
+            
+            // 2. 如果启用拼音，现在才生成拼音（标记已被移除）
+            if (enablePinyin && !group.isEmpty()) {
+                // 将group转换为字符串
+                StringBuilder groupText = new StringBuilder();
+                for (int i = 0; i < group.size(); i++) {
+                    groupText.append(group.get(i));
+                    if (i < group.size() - 1) {
+                        groupText.append("\n");
+                    }
+                }
+                
+                // 生成拼音
+                String withPinyin = PinyinUtil.addPinyinToLyrics(groupText.toString());
+                
+                // 重新分割成行
+                group.clear();
+                String[] pinyinLines = withPinyin.split("\n");
+                for (String line : pinyinLines) {
+                    if (!line.trim().isEmpty()) {
+                        group.add(line.trim());
+                    }
+                }
+            }
+            
+            // 3. 创建幻灯片（带标记）
+            createLyricsSlideWithLabel(ppt, group, sectionLabel);
         }
         
         // 创建结束页
@@ -108,7 +137,7 @@ public class PowerPointGenerator {
         
         // 保存文件
         try (FileOutputStream out = new FileOutputStream(outputPath)) {
-            ppt.write(out);
+                ppt.write(out);
         }
         
         ppt.close();
@@ -139,16 +168,13 @@ public class PowerPointGenerator {
     }
     
     /**
-     * 创建歌词幻灯片
+     * 创建歌词幻灯片（带标记）
      */
-    private void createLyricsSlide(XMLSlideShow ppt, List<String> lines) {
+    private void createLyricsSlideWithLabel(XMLSlideShow ppt, List<String> lines, String sectionLabel) {
         XSLFSlide slide = ppt.createSlide();
         
         // 设置背景
         setSlideBackgroundWithImage(ppt, slide, new Color(30, 30, 35));
-        
-        // 1. 提取段落标记（C, B, L）
-        String sectionLabel = extractAndRemoveSectionLabel(lines);
         
         // 添加歌词文本框
         XSLFTextBox textBox = slide.createTextBox();
