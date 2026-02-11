@@ -141,7 +141,7 @@ public class OnlineStorageDialog extends JDialog {
         // 信息区域
         infoArea = new JTextArea();
         infoArea.setEditable(false);
-        infoArea.setFont(new Font("Consolas", Font.PLAIN, 12));
+        infoArea.setFont(new Font("Microsoft YaHei", Font.PLAIN, 12));
         infoArea.setBackground(new Color(245, 245, 245));
         infoArea.setBorder(new EmptyBorder(10, 10, 10, 10));
         infoArea.setText("配置后可以：\n" +
@@ -246,7 +246,7 @@ public class OnlineStorageDialog extends JDialog {
             String gistId = GitHubLyricsLibrary.getGistId();
             gistIdField.setText(gistId);
             
-            statusLabel.setText("✓ 创建成功！");
+            statusLabel.setText("创建成功！");
             statusLabel.setForeground(new Color(0, 150, 0));
             
             infoArea.setText("成功创建在线歌词库！\n" +
@@ -257,7 +257,7 @@ public class OnlineStorageDialog extends JDialog {
                            "2. 或直接保存设置开始使用");
             
         } catch (Exception ex) {
-            statusLabel.setText("✗ 创建失败");
+            statusLabel.setText("创建失败");
             statusLabel.setForeground(Color.RED);
             
             JOptionPane.showMessageDialog(this,
@@ -289,7 +289,7 @@ public class OnlineStorageDialog extends JDialog {
             
             int songCount = GitHubLyricsLibrary.getAllSongs().size();
             
-            statusLabel.setText("✓ 连接成功！");
+            statusLabel.setText("连接成功！");
             statusLabel.setForeground(new Color(0, 150, 0));
             
             infoArea.setText("连接成功！\n" +
@@ -297,7 +297,7 @@ public class OnlineStorageDialog extends JDialog {
                            "可以点击\"保存设置\"应用配置");
             
         } catch (Exception ex) {
-            statusLabel.setText("✗ 连接失败");
+            statusLabel.setText("连接失败");
             statusLabel.setForeground(Color.RED);
             
             JOptionPane.showMessageDialog(this,
@@ -404,7 +404,7 @@ public class OnlineStorageDialog extends JDialog {
             GitHubLyricsLibrary.setGistId(gistId);
             
             // 这里可以保存到配置文件
-            // saveToConfig(token, gistId);
+            ConfigManager.saveConfig(token, gistId);
             
             JOptionPane.showMessageDialog(this,
                 "设置已保存！\n\n" +

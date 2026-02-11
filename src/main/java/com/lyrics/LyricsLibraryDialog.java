@@ -422,13 +422,13 @@ public class LyricsLibraryDialog extends JDialog {
         // 左侧：切换按钮
         JPanel switchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
         
-        localButton = new JToggleButton("📁 本地库", true);
+        localButton = new JToggleButton("本地库", true);
         localButton.setFont(new Font("Microsoft YaHei", Font.BOLD, 13));
         localButton.setPreferredSize(new Dimension(110, 35));
         localButton.addActionListener(e -> switchToLocal());
         switchPanel.add(localButton);
         
-        onlineButton = new JToggleButton("☁ 在线库");
+        onlineButton = new JToggleButton("在线库");
         onlineButton.setFont(new Font("Microsoft YaHei", Font.BOLD, 13));
         onlineButton.setPreferredSize(new Dimension(110, 35));
         onlineButton.addActionListener(e -> switchToOnline());
@@ -441,7 +441,7 @@ public class LyricsLibraryDialog extends JDialog {
         panel.add(switchPanel, BorderLayout.WEST);
         
         // 右侧：设置按钮
-        settingsButton = new JButton("⚙ 在线设置");
+        settingsButton = new JButton("在线设置");
         settingsButton.setFont(new Font("Microsoft YaHei", Font.PLAIN, 12));
         settingsButton.addActionListener(e -> openOnlineSettings());
         panel.add(settingsButton, BorderLayout.EAST);
@@ -463,7 +463,7 @@ public class LyricsLibraryDialog extends JDialog {
     private void switchToOnline() {
         if (!GitHubLyricsLibrary.isConfigured()) {
             JOptionPane.showMessageDialog(this,
-                "请先配置在线歌词库！\n点击右侧\"⚙ 在线设置\"按钮进行配置。",
+                "请先配置在线歌词库！\n点击右侧\"在线设置\"按钮进行配置。",
                 "提示",
                 JOptionPane.INFORMATION_MESSAGE);
             localButton.setSelected(true);

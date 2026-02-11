@@ -891,6 +891,7 @@ public class LyricsToSlidesApp extends JFrame {
     public static void main(String[] args) {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            ConfigManager.loadConfig();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -911,7 +912,7 @@ public class LyricsToSlidesApp extends JFrame {
         JMenu libraryMenu = new JMenu("歌词库");
         libraryMenu.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
         
-        JMenuItem onlineSettingsItem = new JMenuItem("⚙ 在线存储设置");
+        JMenuItem onlineSettingsItem = new JMenuItem("在线存储设置");
         onlineSettingsItem.setFont(new Font("Microsoft YaHei", Font.PLAIN, 13));
         onlineSettingsItem.addActionListener(e -> {
             OnlineStorageDialog dialog = new OnlineStorageDialog(this);

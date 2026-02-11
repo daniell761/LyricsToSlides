@@ -1,10 +1,12 @@
 com\lyrics\LyricsToSlidesApp$FontColorListener.class
 com\lyrics\PinyinUtil.class
+com\lyrics\GitHubLyricsLibrary.class
+com\lyrics\OnlineStorageDialog.class
 com\lyrics\LyricsToSlidesApp.class
 com\lyrics\PowerPointGenerator.class
 com\lyrics\LyricsToSlidesApp$PreviewPanel.class
 com\lyrics\LyricsLibraryDialog$1.class
-com\lyrics\LyricsLibrary$1.class
+com\lyrics\ConfigManager.class
 com\lyrics\LyricsToSlidesApp$SelectBackgroundListener.class
 com\lyrics\LyricsLibrary$PinyinComparator.class
 com\lyrics\LyricsLibraryDialog$2.class
