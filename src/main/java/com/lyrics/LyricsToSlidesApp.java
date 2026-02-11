@@ -10,6 +10,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.ArrayList;
+
 import javax.imageio.ImageIO;
 
 public class LyricsToSlidesApp extends JFrame {
@@ -394,21 +396,31 @@ public class LyricsToSlidesApp extends JFrame {
         }
     }
     
-    /**
-     * 更新预览 - 自动实时更新
-     */
-    private void updatePreview() {
+        private void updatePreview() {
         String lyrics = lyricsTextArea.getText().trim();
         int linesPerSlide = (Integer) linesPerSlideSpinner.getValue();
         boolean enablePinyin = enablePinyinCheckBox.isSelected();
         
-        // 1. 先提取段落标记（检查所有行）
-        String sectionLabel = null;
         String[] lines = lyrics.split("\n");
         
-        // 检查每一行是否有标记
-        for (int i = 0; i < lines.length; i++) {
-            String line = lines[i].trim();
+        // 1. 先获取第一组歌词（考虑/分隔符）
+        StringBuilder previewLyrics = new StringBuilder();
+        ArrayList<String> firstSlideLines = new ArrayList<>();
+        int count = 0;
+        
+        for (String line : lines) {
+            String trimmed = line.trim();
+            if (!trimmed.isEmpty() && count < linesPerSlide) {
+                firstSlideLines.add(trimmed);
+                count++;
+                if (trimmed.endsWith("/")) break;
+            }
+        }
+        
+        // 2. 在第一组中检查标签（只检查会显示的这几行）
+        String sectionLabel = null;
+        for (int i = 0; i < firstSlideLines.size(); i++) {
+            String line = firstSlideLines.get(i);
             if (line.length() > 0) {
                 char firstChar = line.charAt(0);
                 if (firstChar == 'C' || firstChar == 'B' || firstChar == 'L' || firstChar == 'V') {
@@ -420,34 +432,28 @@ public class LyricsToSlidesApp extends JFrame {
                         sectionLabel = line.substring(0, j);
                         // 移除标记
                         String remaining = line.substring(j + 1).trim();
-                        lines[i] = remaining;
+                        firstSlideLines.set(i, remaining);
                         break; // 找到第一个标记就停止
                     }
                 }
             }
         }
         
-        // 2. 获取第一组歌词（考虑/分隔符）
-        StringBuilder previewLyrics = new StringBuilder();
-        int count = 0;
-        for (String line : lines) {
-            String trimmed = line.trim();
-            if (!trimmed.isEmpty() && count < linesPerSlide) {
-                String displayLine = trimmed.endsWith("/") ? trimmed.substring(0, trimmed.length() - 1).trim() : trimmed;
-                if (count > 0) previewLyrics.append("\n");
-                previewLyrics.append(displayLine);
-                count++;
-                if (trimmed.endsWith("/")) break;
-            }
+        // 3. 组合第一组的歌词（移除/符号）
+        for (int i = 0; i < firstSlideLines.size(); i++) {
+            String line = firstSlideLines.get(i);
+            String displayLine = line.endsWith("/") ? line.substring(0, line.length() - 1).trim() : line;
+            if (i > 0) previewLyrics.append("\n");
+            previewLyrics.append(displayLine);
         }
         
-        // 3. 如果启用拼音，处理歌词
+        // 4. 如果启用拼音，处理歌词
         String displayLyrics = previewLyrics.toString();
         if (enablePinyin && !displayLyrics.isEmpty()) {
             displayLyrics = PinyinUtil.addPinyinToLyrics(displayLyrics);
         }
         
-        // 4. 更新预览面板（包括标记）
+        // 5. 更新预览面板（包括标记）
         previewPanel.setBackgroundImage(selectedBackgroundPath);
         previewPanel.setLyrics(displayLyrics);
         previewPanel.setSectionLabel(sectionLabel);
