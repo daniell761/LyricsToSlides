@@ -55,6 +55,9 @@ public class LyricsToSlidesApp extends JFrame {
         setSize(1600, 800);
         setLocationRelativeTo(null);
         
+        // 添加菜单栏
+        createMenuBar();
+        
         // 创建主面板 - 使用分割面板
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         splitPane.setDividerLocation(750);
@@ -896,5 +899,142 @@ public class LyricsToSlidesApp extends JFrame {
             LyricsToSlidesApp app = new LyricsToSlidesApp();
             app.setVisible(true);
         });
+    }
+
+    /**
+     * 创建菜单栏
+     */
+    private void createMenuBar() {
+        JMenuBar menuBar = new JMenuBar();
+        
+        // 歌词库菜单
+        JMenu libraryMenu = new JMenu("歌词库");
+        libraryMenu.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
+        
+        JMenuItem onlineSettingsItem = new JMenuItem("⚙ 在线存储设置");
+        onlineSettingsItem.setFont(new Font("Microsoft YaHei", Font.PLAIN, 13));
+        onlineSettingsItem.addActionListener(e -> {
+            OnlineStorageDialog dialog = new OnlineStorageDialog(this);
+            dialog.setVisible(true);
+        });
+        libraryMenu.add(onlineSettingsItem);
+        
+        libraryMenu.addSeparator();
+        
+        JMenuItem syncItem = new JMenuItem("↓ 从在线库同步到本地");
+        syncItem.setFont(new Font("Microsoft YaHei", Font.PLAIN, 13));
+        syncItem.addActionListener(e -> syncFromOnline());
+        libraryMenu.add(syncItem);
+        
+        JMenuItem uploadItem = new JMenuItem("↑ 从本地上传到在线");
+        uploadItem.setFont(new Font("Microsoft YaHei", Font.PLAIN, 13));
+        uploadItem.addActionListener(e -> uploadToOnline());
+        libraryMenu.add(uploadItem);
+        
+        menuBar.add(libraryMenu);
+        
+        // 帮助菜单
+        JMenu helpMenu = new JMenu("帮助");
+        helpMenu.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
+        
+        JMenuItem aboutItem = new JMenuItem("关于");
+        aboutItem.setFont(new Font("Microsoft YaHei", Font.PLAIN, 13));
+        aboutItem.addActionListener(e -> showAbout());
+        helpMenu.add(aboutItem);
+        
+        menuBar.add(helpMenu);
+        
+        setJMenuBar(menuBar);
+    }
+    
+    /**
+     * 从在线同步到本地
+     */
+    private void syncFromOnline() {
+        if (!GitHubLyricsLibrary.isConfigured()) {
+            JOptionPane.showMessageDialog(this,
+                "请先配置在线存储！\n点击菜单：歌词库 → 在线存储设置",
+                "提示",
+                JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        
+        int confirm = JOptionPane.showConfirmDialog(this,
+            "确定要从在线库同步到本地吗？\n本地已存在的同名歌曲将被覆盖。",
+            "确认同步",
+            JOptionPane.YES_NO_OPTION);
+        
+        if (confirm != JOptionPane.YES_OPTION) {
+            return;
+        }
+        
+        try {
+            int count = GitHubLyricsLibrary.exportToLocal();
+            JOptionPane.showMessageDialog(this,
+                "成功同步 " + count + " 首歌曲到本地！",
+                "同步完成",
+                JOptionPane.INFORMATION_MESSAGE);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this,
+                "同步失败: " + e.getMessage(),
+                "错误",
+                JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
+    /**
+     * 从本地上传到在线
+     */
+    private void uploadToOnline() {
+        if (!GitHubLyricsLibrary.isConfigured()) {
+            JOptionPane.showMessageDialog(this,
+                "请先配置在线存储！\n点击菜单：歌词库 → 在线存储设置",
+                "提示",
+                JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        
+        int confirm = JOptionPane.showConfirmDialog(this,
+            "确定要将所有本地歌词上传到在线库吗？\n这可能需要一些时间。",
+            "确认上传",
+            JOptionPane.YES_NO_OPTION);
+        
+        if (confirm != JOptionPane.YES_OPTION) {
+            return;
+        }
+        
+        try {
+            int count = GitHubLyricsLibrary.importFromLocal();
+            JOptionPane.showMessageDialog(this,
+                "成功上传 " + count + " 首歌曲到在线库！",
+                "上传完成",
+                JOptionPane.INFORMATION_MESSAGE);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this,
+                "上传失败: " + e.getMessage(),
+                "错误",
+                JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
+    /**
+     * 显示关于信息
+     */
+    private void showAbout() {
+        String aboutText = 
+            "歌词转PPT工具 v3.0\n\n" +
+            "功能特性:\n" +
+            "• 本地歌词库管理\n" +
+            "• GitHub Gist在线存储\n" +
+            "• 拼音注音支持\n" +
+            "• 实时预览\n" +
+            "• 自定义字体和颜色\n" +
+            "• 背景图片支持\n\n" +
+            "© 2024 歌词转PPT工具";
+        
+        JOptionPane.showMessageDialog(this,
+            aboutText,
+            "关于",
+            JOptionPane.INFORMATION_MESSAGE);
     }
 }

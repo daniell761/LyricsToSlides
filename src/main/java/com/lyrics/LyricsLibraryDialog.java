@@ -20,9 +20,15 @@ public class LyricsLibraryDialog extends JDialog {
     private String selectedSong = null;
     private String selectedLyrics = null;
     
+    // 在线存储支持
+    private boolean useOnline = false;
+    private JToggleButton localButton;
+    private JToggleButton onlineButton;
+    private JButton settingsButton;
+    
     public LyricsLibraryDialog(Frame parent) {
         super(parent, "歌词库", true);
-        setSize(900, 600);
+        setSize(900, 650);
         setLocationRelativeTo(parent);
         
         initUI();
@@ -32,6 +38,10 @@ public class LyricsLibraryDialog extends JDialog {
     private void initUI() {
         JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
         mainPanel.setBorder(new EmptyBorder(15, 15, 15, 15));
+        
+        // 顶部：存储类型切换
+        JPanel topPanel = createTopPanel();
+        mainPanel.add(topPanel, BorderLayout.NORTH);
         
         // 左侧：字母筛选
         JPanel leftPanel = createLetterPanel();
@@ -213,9 +223,21 @@ public class LyricsLibraryDialog extends JDialog {
      */
     private void loadAllSongs() {
         listModel.clear();
-        List<String> songs = LyricsLibrary.getAllSongs();
-        for (String song : songs) {
-            listModel.addElement(song);
+        try {
+            List<String> songs;
+            if (useOnline) {
+                songs = GitHubLyricsLibrary.getAllSongs();
+            } else {
+                songs = LyricsLibrary.getAllSongs();
+            }
+            for (String song : songs) {
+                listModel.addElement(song);
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this,
+                "加载歌曲列表失败: " + e.getMessage(),
+                "错误",
+                JOptionPane.ERROR_MESSAGE);
         }
     }
     
@@ -226,9 +248,21 @@ public class LyricsLibraryDialog extends JDialog {
         String keyword = searchField.getText().trim();
         listModel.clear();
         
-        List<String> songs = LyricsLibrary.searchSongs(keyword);
-        for (String song : songs) {
-            listModel.addElement(song);
+        try {
+            List<String> songs;
+            if (useOnline) {
+                songs = GitHubLyricsLibrary.searchSongs(keyword);
+            } else {
+                songs = LyricsLibrary.searchSongs(keyword);
+            }
+            for (String song : songs) {
+                listModel.addElement(song);
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this,
+                "搜索失败: " + e.getMessage(),
+                "错误",
+                JOptionPane.ERROR_MESSAGE);
         }
     }
     
@@ -244,13 +278,25 @@ public class LyricsLibraryDialog extends JDialog {
         }
         
         listModel.clear();
-        Map<String, List<String>> grouped = LyricsLibrary.getSongsByInitial();
-        List<String> songs = grouped.get(letter);
-        
-        if (songs != null) {
-            for (String song : songs) {
-                listModel.addElement(song);
+        try {
+            Map<String, List<String>> grouped;
+            if (useOnline) {
+                grouped = GitHubLyricsLibrary.getSongsByInitial();
+            } else {
+                grouped = LyricsLibrary.getSongsByInitial();
             }
+            List<String> songs = grouped.get(letter);
+            
+            if (songs != null) {
+                for (String song : songs) {
+                    listModel.addElement(song);
+                }
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this,
+                "筛选失败: " + e.getMessage(),
+                "错误",
+                JOptionPane.ERROR_MESSAGE);
         }
     }
     
@@ -264,13 +310,26 @@ public class LyricsLibraryDialog extends JDialog {
             return;
         }
         
-        String lyrics = LyricsLibrary.loadLyrics(selected);
-        if (lyrics != null) {
-            selectedSong = selected;
-            selectedLyrics = lyrics;
-            dispose();
-        } else {
-            JOptionPane.showMessageDialog(this, "加载歌词失败！", "错误", JOptionPane.ERROR_MESSAGE);
+        try {
+            String lyrics;
+            if (useOnline) {
+                lyrics = GitHubLyricsLibrary.loadLyrics(selected);
+            } else {
+                lyrics = LyricsLibrary.loadLyrics(selected);
+            }
+            
+            if (lyrics != null) {
+                selectedSong = selected;
+                selectedLyrics = lyrics;
+                dispose();
+            } else {
+                JOptionPane.showMessageDialog(this, "加载歌词失败！", "错误", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this,
+                "加载歌词失败: " + e.getMessage(),
+                "错误",
+                JOptionPane.ERROR_MESSAGE);
         }
     }
     
@@ -288,11 +347,25 @@ public class LyricsLibraryDialog extends JDialog {
         if (newName != null && !newName.trim().isEmpty()) {
             newName = newName.trim();
             
-            if (LyricsLibrary.renameLyrics(selected, newName)) {
-                JOptionPane.showMessageDialog(this, "重命名成功！", "成功", JOptionPane.INFORMATION_MESSAGE);
-                loadAllSongs();
-            } else {
-                JOptionPane.showMessageDialog(this, "重命名失败！可能新歌名已存在。", "错误", JOptionPane.ERROR_MESSAGE);
+            try {
+                boolean success;
+                if (useOnline) {
+                    success = GitHubLyricsLibrary.renameLyrics(selected, newName);
+                } else {
+                    success = LyricsLibrary.renameLyrics(selected, newName);
+                }
+                
+                if (success) {
+                    JOptionPane.showMessageDialog(this, "重命名成功！", "成功", JOptionPane.INFORMATION_MESSAGE);
+                    loadAllSongs();
+                } else {
+                    JOptionPane.showMessageDialog(this, "重命名失败！可能新歌名已存在。", "错误", JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this,
+                    "重命名失败: " + e.getMessage(),
+                    "错误",
+                    JOptionPane.ERROR_MESSAGE);
             }
         }
     }
@@ -316,11 +389,115 @@ public class LyricsLibraryDialog extends JDialog {
         );
         
         if (confirm == JOptionPane.YES_OPTION) {
-            if (LyricsLibrary.deleteLyrics(selected)) {
-                JOptionPane.showMessageDialog(this, "删除成功！", "成功", JOptionPane.INFORMATION_MESSAGE);
+            try {
+                boolean success;
+                if (useOnline) {
+                    success = GitHubLyricsLibrary.deleteLyrics(selected);
+                } else {
+                    success = LyricsLibrary.deleteLyrics(selected);
+                }
+                
+                if (success) {
+                    JOptionPane.showMessageDialog(this, "删除成功！", "成功", JOptionPane.INFORMATION_MESSAGE);
+                    loadAllSongs();
+                } else {
+                    JOptionPane.showMessageDialog(this, "删除失败！", "错误", JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this,
+                    "删除失败: " + e.getMessage(),
+                    "错误",
+                    JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+    
+    /**
+     * 创建顶部面板（存储类型切换）
+     */
+    private JPanel createTopPanel() {
+        JPanel panel = new JPanel(new BorderLayout(10, 0));
+        panel.setBorder(new EmptyBorder(0, 0, 10, 0));
+        
+        // 左侧：切换按钮
+        JPanel switchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        
+        localButton = new JToggleButton("📁 本地库", true);
+        localButton.setFont(new Font("Microsoft YaHei", Font.BOLD, 13));
+        localButton.setPreferredSize(new Dimension(110, 35));
+        localButton.addActionListener(e -> switchToLocal());
+        switchPanel.add(localButton);
+        
+        onlineButton = new JToggleButton("☁ 在线库");
+        onlineButton.setFont(new Font("Microsoft YaHei", Font.BOLD, 13));
+        onlineButton.setPreferredSize(new Dimension(110, 35));
+        onlineButton.addActionListener(e -> switchToOnline());
+        switchPanel.add(onlineButton);
+        
+        ButtonGroup group = new ButtonGroup();
+        group.add(localButton);
+        group.add(onlineButton);
+        
+        panel.add(switchPanel, BorderLayout.WEST);
+        
+        // 右侧：设置按钮
+        settingsButton = new JButton("⚙ 在线设置");
+        settingsButton.setFont(new Font("Microsoft YaHei", Font.PLAIN, 12));
+        settingsButton.addActionListener(e -> openOnlineSettings());
+        panel.add(settingsButton, BorderLayout.EAST);
+        
+        return panel;
+    }
+    
+    /**
+     * 切换到本地库
+     */
+    private void switchToLocal() {
+        useOnline = false;
+        loadAllSongs();
+    }
+    
+    /**
+     * 切换到在线库
+     */
+    private void switchToOnline() {
+        if (!GitHubLyricsLibrary.isConfigured()) {
+            JOptionPane.showMessageDialog(this,
+                "请先配置在线歌词库！\n点击右侧\"⚙ 在线设置\"按钮进行配置。",
+                "提示",
+                JOptionPane.INFORMATION_MESSAGE);
+            localButton.setSelected(true);
+            return;
+        }
+        
+        useOnline = true;
+        try {
+            GitHubLyricsLibrary.refreshCache();
+            loadAllSongs();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this,
+                "连接在线库失败: " + e.getMessage(),
+                "错误",
+                JOptionPane.ERROR_MESSAGE);
+            localButton.setSelected(true);
+            useOnline = false;
+        }
+    }
+    
+    /**
+     * 打开在线设置对话框
+     */
+    private void openOnlineSettings() {
+        OnlineStorageDialog dialog = new OnlineStorageDialog((Frame) getOwner());
+        dialog.setVisible(true);
+        
+        // 如果当前在在线模式，刷新列表
+        if (useOnline && GitHubLyricsLibrary.isConfigured()) {
+            try {
+                GitHubLyricsLibrary.refreshCache();
                 loadAllSongs();
-            } else {
-                JOptionPane.showMessageDialog(this, "删除失败！", "错误", JOptionPane.ERROR_MESSAGE);
+            } catch (Exception e) {
+                // 忽略错误
             }
         }
     }
