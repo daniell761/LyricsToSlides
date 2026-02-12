@@ -59,7 +59,7 @@ public class LyricsToSlidesApp extends JFrame {
         
         // 创建主面板 - 使用分割面板
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-        splitPane.setDividerLocation(750);
+        splitPane.setDividerLocation(700);
         splitPane.setResizeWeight(0.55);
         
         // 左侧面板 - 控制区
