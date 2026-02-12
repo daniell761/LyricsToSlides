@@ -50,7 +50,7 @@ public class LyricsToSlidesApp extends JFrame {
     private float backgroundBrightness = 1.0f;  // 默认100%亮度
     
     public LyricsToSlidesApp() {
-        setTitle("歌词转PPT工具 - 增强版");
+        setTitle("歌词转PPT工具");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1600, 800);
         setLocationRelativeTo(null);
@@ -101,7 +101,7 @@ public class LyricsToSlidesApp extends JFrame {
         panel.setBorder(new EmptyBorder(15, 15, 15, 15));
         
         // 标题
-        JLabel titleLabel = new JLabel("实时预览 (1280x720 @ 60%)", SwingConstants.CENTER);
+        JLabel titleLabel = new JLabel("实时预览", SwingConstants.CENTER);
         titleLabel.setFont(new Font("Microsoft YaHei", Font.BOLD, 16));
         panel.add(titleLabel, BorderLayout.NORTH);
         
@@ -142,7 +142,7 @@ public class LyricsToSlidesApp extends JFrame {
         JLabel linesLabel = new JLabel("每张幻灯片行数：");
         linesLabel.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
         settingsPanel.add(linesLabel);
-        SpinnerNumberModel spinnerModel = new SpinnerNumberModel(2, 1, 50, 1);
+        SpinnerNumberModel spinnerModel = new SpinnerNumberModel(2, 1, 10, 1);
         linesPerSlideSpinner = new JSpinner(spinnerModel);
         ((JSpinner.DefaultEditor) linesPerSlideSpinner.getEditor()).getTextField().setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
         linesPerSlideSpinner.setPreferredSize(new Dimension(80, 30));
@@ -649,6 +649,14 @@ public class LyricsToSlidesApp extends JFrame {
             
             if (selectedBackgroundPath != null) {
                 fileChooser.setCurrentDirectory(new File(selectedBackgroundPath).getParentFile());
+            } else {
+                File backgroundDir = new File(System.getProperty("user.dir"), "Background");
+
+                if (!backgroundDir.exists()) {
+                    backgroundDir.mkdirs();
+                }
+
+                fileChooser.setCurrentDirectory(backgroundDir);
             }
             
             int result = fileChooser.showOpenDialog(LyricsToSlidesApp.this);
@@ -1023,7 +1031,7 @@ public class LyricsToSlidesApp extends JFrame {
      */
     private void showAbout() {
         String aboutText = 
-            "歌词转PPT工具 v3.0\n\n" +
+            "歌词转PPT工具 v1.0\n\n" +
             "功能特性:\n" +
             "• 本地歌词库管理\n" +
             "• GitHub Gist在线存储\n" +
@@ -1031,7 +1039,8 @@ public class LyricsToSlidesApp extends JFrame {
             "• 实时预览\n" +
             "• 自定义字体和颜色\n" +
             "• 背景图片支持\n\n" +
-            "© 2024 歌词转PPT工具";
+            "Author: Daniel\n" +
+            "© 2026 歌词转PPT工具";
         
         JOptionPane.showMessageDialog(this,
             aboutText,

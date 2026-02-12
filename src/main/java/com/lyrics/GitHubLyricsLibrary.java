@@ -361,7 +361,8 @@ public class GitHubLyricsLibrary {
 
         char first = name.charAt(0);
 
-        if (Character.isLetter(first)) {
+        // 如果是英文字母
+        if ((first >= 'A' && first <= 'Z') || (first >= 'a' && first <= 'z')) {
             return String.valueOf(first).toUpperCase();
         }
 

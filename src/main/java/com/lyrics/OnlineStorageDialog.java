@@ -162,12 +162,12 @@ public class OnlineStorageDialog extends JDialog {
         // 左侧：数据迁移
         JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         
-        importButton = new JButton("导入本地→在线");
+        importButton = new JButton("本地→在线");
         importButton.setToolTipText("将本地歌词库上传到在线");
         importButton.addActionListener(e -> importFromLocal());
         leftPanel.add(importButton);
         
-        exportButton = new JButton("导出在线→本地");
+        exportButton = new JButton("在线→本地");
         exportButton.setToolTipText("将在线歌词库下载到本地");
         exportButton.addActionListener(e -> exportToLocal());
         leftPanel.add(exportButton);
