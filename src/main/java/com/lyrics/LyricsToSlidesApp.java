@@ -6,8 +6,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
@@ -312,14 +311,35 @@ public class LyricsToSlidesApp extends JFrame {
     private JPanel createCenterPanel() {
         JPanel panel = new JPanel(new BorderLayout(5, 5));
         
+        // 标题栏（包含标签和帮助按钮）
+        JPanel titlePanel = new JPanel(new BorderLayout());
+        
         JLabel label = new JLabel("请输入歌词（每行一句）：");
         label.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
-        panel.add(label, BorderLayout.NORTH);
+        titlePanel.add(label, BorderLayout.WEST);
+        
+        // 帮助按钮
+        JButton helpButton = new JButton("如何输入歌词?");
+        helpButton.setFont(new Font("Microsoft YaHei", Font.PLAIN, 12));
+        helpButton.setFocusPainted(false);
+        helpButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        helpButton.addActionListener(e -> showLyricsFormatHelp());
+        titlePanel.add(helpButton, BorderLayout.EAST);
+        
+        panel.add(titlePanel, BorderLayout.NORTH);
         
         lyricsTextArea = new JTextArea();
         lyricsTextArea.setFont(new Font("Microsoft YaHei", Font.PLAIN, 15));
         lyricsTextArea.setLineWrap(true);
         lyricsTextArea.setWrapStyleWord(true);
+        lyricsTextArea.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    openFullEditor();
+                }
+            }
+        });
         
         // 添加文本变化监听器，实时更新预览
         lyricsTextArea.getDocument().addDocumentListener(new DocumentListener() {
@@ -333,6 +353,208 @@ public class LyricsToSlidesApp extends JFrame {
         panel.add(scrollPane, BorderLayout.CENTER);
         
         return panel;
+    }
+
+    private void openFullEditor() {
+        // 创建模态对话框
+        JDialog dialog = new JDialog(this, "编辑歌词", true);
+        dialog.setSize(800, 800);
+        dialog.setLocationRelativeTo(this); // 居中显示
+        dialog.setLayout(new BorderLayout());
+
+        // ===== 大文本编辑区 =====
+        JTextArea largeTextArea = new JTextArea(lyricsTextArea.getText());
+        largeTextArea.setFont(new Font("Microsoft YaHei", Font.PLAIN, 18));
+        largeTextArea.setLineWrap(true);
+        largeTextArea.setWrapStyleWord(true);
+
+        JScrollPane scrollPane = new JScrollPane(largeTextArea);
+        dialog.add(scrollPane, BorderLayout.CENTER);
+
+        // ===== 底部按钮 =====
+        JButton saveButton = new JButton("确定");
+        saveButton.setFont(new Font("Microsoft YaHei", Font.PLAIN, 16));
+        saveButton.addActionListener(e -> {
+            lyricsTextArea.setText(largeTextArea.getText());
+            dialog.dispose();
+        });
+
+        // 居中放置按钮
+        JPanel buttonPanel = new JPanel(); // 默认 FlowLayout 居中
+        buttonPanel.add(saveButton);
+        dialog.add(buttonPanel, BorderLayout.SOUTH);
+
+        // ===== ESC 关闭 =====
+        largeTextArea.getInputMap().put(
+            KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+            "exit"
+        );
+        largeTextArea.getActionMap().put("exit", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dialog.dispose();
+            }
+        });
+
+        dialog.setVisible(true);
+
+        // 自动滚动到顶部
+        SwingUtilities.invokeLater(() -> {
+            lyricsTextArea.setCaretPosition(0);
+        });
+    }
+
+
+        
+    /**
+     * 显示歌词格式帮助对话框
+     */
+    private void showLyricsFormatHelp() {
+        JDialog helpDialog = new JDialog(this, "歌词输入格式说明", true);
+        helpDialog.setSize(750, 650);
+        helpDialog.setLocationRelativeTo(this);
+        
+        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        
+        // 创建带格式的帮助文本
+        JTextPane helpText = new JTextPane();
+        helpText.setContentType("text/html");
+        helpText.setEditable(false);
+        helpText.setFont(new Font("Microsoft YaHei", Font.PLAIN, 13));
+        
+        String helpContent = 
+            "<html><body style='font-family: Microsoft YaHei; font-size: 14px; padding: 15px;'>" +
+            "<h2 style='color: #2c3e50;'>📝 歌词输入格式说明</h2>" +
+                        
+            "<hr style='margin: 15px 0;'>" +
+            
+            "<h3 style='color: #3498db;'>1. 标签</h3>" +
+            "<p>标签用于标记歌曲结构。</p>" +
+            
+            "<table width='100%' style='margin: 10px 0; table-layout: fixed;'>" +
+            "<tr>" +
+            "<td width='50%' style='vertical-align: top; padding: 0 10px;'>" +
+            "<div style='background-color: #fff3cd; padding: 15px; border-radius: 5px; height: 100%; box-sizing: border-box;'>" +
+            "<b>你输入的内容：</b><br><br>" +
+            "<code style='font-size: 13px;'>" +
+            "V1 我曾经跨过山和大海<br>" +
+            "也穿过人山人海<br>" +
+            "<br>" +
+            "<br>" +
+            "</code>" +
+            "</div>" +
+            "</td>" +
+            "<td width='50%' style='vertical-align: top; text-align: center; padding: 0 10px;'>" +
+            "<div style='background-color: #d4edda; padding: 15px; border-radius: 5px; height: 100%; box-sizing: border-box;'>" +
+            "<b>PPT中显示：</b><br><br>" +
+            "<code style='font-size: 13px;'>" +
+            "我曾经跨过山和大海<br>" +
+            "也穿过人山人海<br>" +
+            "<br>" +
+            "V1<br>" +
+            "</code>" +
+            "</div>" +
+            "</td>" +
+            "</tr>" +
+            "</table>" +
+            
+            "<p style='font-size: 12px; color: #666;'>常用标签：V / V1 / V2 <code>(Verse)</code>  " +
+            "C / C1 / C2 <code>(Chorus)</code>  " +
+            "B <code>(Bridge)</code> L <code>(Last)</code></p>" +
+            
+            "<hr style='margin: 20px 0;'>" +
+            
+            "<h3 style='color: #3498db;'>2. 分页符 /（控制强制分页）</h3>" +
+            "<p>在<b>行末</b>添加 <code>/</code> 会在该行后强制换页。</p>" +
+            
+            "<table width='100%' style='margin: 10px 0;'>" +
+            "<tr>" +
+            "<td width='50%' style='vertical-align: top; padding-right: 20px;'>" +
+            "<div style='background-color: #fff3cd; padding: 15px; border-radius: 5px;'>" +
+            "<b>你输入的内容：</b><br><br>" +
+            "<code style='font-size: 13px;'>" +
+            "我曾经跨过山和大海<br>" +
+            "也穿过人山人海<br>" +
+            "我曾经拥有着的一切<span style='background: yellow; font-weight: bold;'>/</span><br>" +
+            "转眼都飘散如烟<br>" +
+            "我曾经失落失望<br>" +
+            "<br>" +
+            "<br>" +
+            "<br>" +
+            "<br>" +
+            "<br>" +
+            "<br>" +
+            "<br>" +
+            "<br>" +
+            "<br>" +
+            "</code>" +
+            "</div>" +
+            "</td>" +
+            "<td width='50%' style='vertical-align: top;'>" +
+            "<div style='background-color: #d4edda; padding: 15px; border-radius: 5px;'>" +
+            "<b>PPT生成结果：</b><br><br>" +
+            
+            "<div style='border: 2px solid #3498db; padding: 10px; margin-bottom: 10px; background: white;'>" +
+            "<b style='color: #3498db;'>📄 第1页</b><br>" +
+            "<code style='font-size: 13px;'>" +
+            "我曾经跨过山和大海<br>" +
+            "也穿过人山人海" +
+            "</code>" +
+            "</div>" +
+            
+            "<div style='border: 2px solid #3498db; padding: 10px; margin-bottom: 10px; background: white;'>" +
+            "<b style='color: #3498db;'>📄 第2页</b><br>" +
+            "<code style='font-size: 13px;'>" +
+            "我曾经拥有着的一切<br>" +
+            "</code>" +
+            "<small style='color: #e74c3c;'>行末有/，强制分页</small>" +
+            "</div>" +
+            
+            "<div style='border: 2px solid #3498db; padding: 10px; background: white;'>" +
+            "<b style='color: #3498db;'>📄 第3页</b><br>" +
+            "<code style='font-size: 13px;'>" +
+            "转眼都飘散如烟<br>" +
+            "我曾经失落失望" +
+            "</code>" +
+            "</div>" +
+            
+            "</div>" +
+            "</td>" +
+            "</tr>" +
+            "</table>" +            
+            
+            "<hr style='margin: 20px 0;'>" +
+            
+            "<div style='background-color: #e8f5e9; padding: 15px; border-left: 4px solid #4caf50; margin: 15px 0;'>" +
+            "<h4 style='margin-top: 0; color: #2e7d32;'>💡 关键要点</h4>" +
+            "<ul style='margin-bottom: 0;'>" +
+            "<li><b>每输入一行 = PPT中一行</b></li>" +
+            "<li><b>标签在行首</b>，格式：<code>V1 歌词内容</code></li>" +
+            "<li><b>分页符在行末</b>，格式：<code>歌词内容/</code></li>" +
+            "</ul>" +
+            "</div>" +
+            
+            "</body></html>";
+        
+        helpText.setText(helpContent);
+        helpText.setCaretPosition(0);
+        
+        JScrollPane scrollPane = new JScrollPane(helpText);
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
+        
+        // 底部按钮
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton closeButton = new JButton("我明白了");
+        closeButton.setFont(new Font("Microsoft YaHei", Font.BOLD, 14));
+        closeButton.setPreferredSize(new Dimension(120, 40));
+        closeButton.addActionListener(e -> helpDialog.dispose());
+        buttonPanel.add(closeButton);
+        
+        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+        
+        helpDialog.add(mainPanel);
+        helpDialog.setVisible(true);
     }
     
     private JPanel createBottomPanel() {
