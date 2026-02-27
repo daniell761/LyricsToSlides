@@ -319,7 +319,7 @@ public class LyricsToSlidesApp extends JFrame {
         titlePanel.add(label, BorderLayout.WEST);
         
         // 帮助按钮
-        JButton helpButton = new JButton("如何输入歌词?");
+        JButton helpButton = new JButton("歌词格式说明");
         helpButton.setFont(new Font("Microsoft YaHei", Font.PLAIN, 12));
         helpButton.setFocusPainted(false);
         helpButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
